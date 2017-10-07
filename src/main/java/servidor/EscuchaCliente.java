@@ -16,6 +16,7 @@ import mensajeria.PaqueteDeMovimientos;
 import mensajeria.PaqueteDePersonajes;
 import mensajeria.PaqueteFinalizarBatalla;
 import mensajeria.PaqueteMovimiento;
+import mensajeria.PaqueteNpc;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
 
@@ -35,6 +36,7 @@ public class EscuchaCliente extends Thread {
 	private PaqueteUsuario paqueteUsuario;
 	private PaqueteDeMovimientos paqueteDeMovimiento;
 	private PaqueteDePersonajes paqueteDePersonajes;
+	private PaqueteNpc paqueteNPC;
 
 	public EscuchaCliente(String ip, Socket socket, ObjectInputStream entrada, ObjectOutputStream salida) throws IOException {
 		this.socket = socket;
@@ -165,6 +167,14 @@ public class EscuchaCliente extends Thread {
 
 	public void setPaqueteUsuario(PaqueteUsuario paqueteUsuario) {
 		this.paqueteUsuario = paqueteUsuario;
+	}
+	
+	public PaqueteNpc getPaqueteNPC() {
+		return paqueteNPC;
+	}
+
+	public void setPaqueteNPC(PaqueteNpc paqueteNPC) {
+		this.paqueteNPC = paqueteNPC;
 	}
 }
 

@@ -1,23 +1,35 @@
 package comandos;
-import mensajeria.PaqueteNpc;
 
-public class ActualizarNpc extends ComandosEscucha{
+import java.io.IOException;
+
+import estados.Estado;
+import mensajeria.Comando;
+import mensajeria.PaqueteDeNPC;
+import mensajeria.PaqueteNpc;
+import servidor.EscuchaCliente;
+import servidor.Servidor;
+
+public class ActualizarNPC extends ComandosServer {
 
 	@Override
 	public void ejecutar() {
+		escuchaCliente.setPaqueteNPC((PaqueteNpc) gson.fromJson(cadenaLeida, PaqueteNpc.class));
+		//Envio de NPC al cliente
+		for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
+			if (conectado.getPaquetePersonaje().getEstado() == Estado.estadoJuego) {
+				try {
+					PaqueteDeNPC paqueteNPC = (PaqueteDeNPC) new PaqueteDeNPC(Servidor.getPersonajesNPC()).clone();
+					paqueteNPC.setComando(Comando.ACTUALIZARNPC);
+					synchronized (conectado) {
+						conectado.getSalida().writeObject(gson.toJson(paqueteNPC));
+					}
 
-		PaqueteNpc pnpc = (PaqueteNpc) gson.fromJson(cadenaLeida, PaqueteNpc.class);
-		
-		juego.getNpcs().remove(pnpc.getId());
-		juego.getNpcs().put(pnpc.getId(), pnpc);
-		
-		 if (((PaqueteNpc) juego.getNpcs()).getId() == pnpc.getId()) {
-			 juego.getEstadoJuego().actualizarNpc();
-			 juego.getCliente().actualizarNpc(juego.getNpcs().get(pnpc.getId()));
-		  
-		 }
-		
+				} catch (IOException e) {
+					Servidor.log.append("Falló al intentar enviar ataque a:" + conectado.getPaquetePersonaje().getId() + "\n");
+				}
+			}
+		}
+
 	}
 
-	
 }

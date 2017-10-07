@@ -3,7 +3,9 @@ package comandos;
 import java.io.IOException;
 
 import estados.Estado;
+import mensajeria.Comando;
 import mensajeria.PaqueteBatalla;
+import mensajeria.PaqueteDeNPC;
 import servidor.EscuchaCliente;
 import servidor.Servidor;
 
@@ -21,19 +23,32 @@ public class Batalla extends ComandosServer {
 			// seteo estado de batalla
 			Servidor.getPersonajesConectados().get(escuchaCliente.getPaqueteBatalla().getId())
 					.setEstado(Estado.estadoBatalla);
-			Servidor.getPersonajesConectados().get(escuchaCliente.getPaqueteBatalla().getIdEnemigo())
-					.setEstado(Estado.estadoBatalla);
+//			Servidor.getPersonajesConectados().get(escuchaCliente.getPaqueteBatalla().getIdEnemigo())
+//					.setEstado(Estado.estadoBatalla);
+			if (escuchaCliente.getPaqueteBatalla().getTipoBatalla() == PaqueteBatalla.BATALLAPERSONAJE) {
+				Servidor.getPersonajesConectados().get(escuchaCliente.getPaqueteBatalla().getIdEnemigo())
+				.setEstado(Estado.estadoBatalla);
+			}else{
+				Servidor.getPersonajesNPC().get(escuchaCliente.getPaqueteBatalla().getIdEnemigo())
+				.setEstado(Estado.estadoBatalla);
+			}
 			escuchaCliente.getPaqueteBatalla().setMiTurno(true);
 			escuchaCliente.getSalida().writeObject(gson.toJson(escuchaCliente.getPaqueteBatalla()));
-
+			
 			for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
-				if (conectado.getIdPersonaje() == escuchaCliente.getPaqueteBatalla().getIdEnemigo()) {
-					int aux = escuchaCliente.getPaqueteBatalla().getId();
-					escuchaCliente.getPaqueteBatalla().setId(escuchaCliente.getPaqueteBatalla().getIdEnemigo());
-					escuchaCliente.getPaqueteBatalla().setIdEnemigo(aux);
-					escuchaCliente.getPaqueteBatalla().setMiTurno(false);
-					conectado.getSalida().writeObject(gson.toJson(escuchaCliente.getPaqueteBatalla()));
-					break;
+				if (escuchaCliente.getPaqueteBatalla().getTipoBatalla() == PaqueteBatalla.BATALLAPERSONAJE) {
+					if (conectado.getIdPersonaje() == escuchaCliente.getPaqueteBatalla().getIdEnemigo()) {
+						int aux = escuchaCliente.getPaqueteBatalla().getId();
+						escuchaCliente.getPaqueteBatalla().setId(escuchaCliente.getPaqueteBatalla().getIdEnemigo());
+						escuchaCliente.getPaqueteBatalla().setIdEnemigo(aux);
+						escuchaCliente.getPaqueteBatalla().setMiTurno(false);
+						conectado.getSalida().writeObject(gson.toJson(escuchaCliente.getPaqueteBatalla()));
+						break;
+					}
+				} else {
+					PaqueteDeNPC paqueteNPC = (PaqueteDeNPC) new PaqueteDeNPC(Servidor.getPersonajesNPC()).clone();
+					paqueteNPC.setComando(Comando.ACTUALIZARNPC);
+					conectado.getSalida().writeObject(gson.toJson(paqueteNPC));
 				}
 			}
 		} catch (IOException e) {

@@ -23,6 +23,7 @@ import javax.swing.JTextArea;
 
 import mensajeria.PaqueteMensaje;
 import mensajeria.PaqueteMovimiento;
+import mensajeria.PaqueteNpc;
 import mensajeria.PaquetePersonaje;
 
 public class Servidor extends Thread {
@@ -31,6 +32,7 @@ public class Servidor extends Thread {
 	
 	private static Map<Integer, PaqueteMovimiento> ubicacionPersonajes = new HashMap<>();
 	private static Map<Integer, PaquetePersonaje> personajesConectados = new HashMap<>();
+	private static Map<Integer, PaqueteNpc> personajesNPC = new HashMap<>();
 
 	private static Thread server;
 	
@@ -159,6 +161,8 @@ public class Servidor extends Thread {
 			
 			atencionConexiones.start();
 			atencionMovimientos.start();
+			
+			AtencionNPC.cargarNPC();
 
 			while (true) {
 				Socket cliente = serverSocket.accept();
@@ -229,5 +233,9 @@ public class Servidor extends Thread {
 
 	public static Conector getConector() {
 		return conexionDB;
+	}
+	
+	public static Map<Integer, PaqueteNpc> getPersonajesNPC() {
+		return personajesNPC;
 	}
 }
