@@ -23,7 +23,7 @@ public class FinalizarBatalla extends ComandosServer {
 			Servidor.getPersonajesConectados().get(escuchaCliente.getPaqueteFinalizarBatalla().getIdEnemigo())
 					.setEstado(Estado.estadoJuego);
 		} else {
-			// Gana el NPC: sigue en vivo (vuelve a estadoJuego)
+			// Gana el NPC: sigue vivo (vuelve a estadoJuego)
 			if (paqueteFinalizarBatalla.getGanadorBatalla() == paqueteFinalizarBatalla.getIdEnemigo())
 				Servidor.getPersonajesNPC().get(paqueteFinalizarBatalla.getIdEnemigo()).setEstado(Estado.estadoJuego);
 			else // Gana el Personaje: se borra el NPC
