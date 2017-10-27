@@ -13,6 +13,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.swing.JButton;
@@ -178,25 +179,25 @@ public class Servidor extends Thread {
 	}
 
 	public static boolean mensajeAUsuario(PaqueteMensaje pqm) {
-		boolean result = true;
+		boolean result = false;
 		boolean noEncontro = true;
-		for (Map.Entry<Integer, PaquetePersonaje> personaje : personajesConectados.entrySet()) {
-			if(noEncontro && (!personaje.getValue().getNombre().equals(pqm.getUserReceptor()))) {
-				result = false;
-			} else {
-				result = true;
-				noEncontro = false;
-			}
+		Iterator<Integer> it = personajesConectados.keySet().iterator();
+		
+		while(it.hasNext() && noEncontro){
+		    if(personajesConectados.get(it.next()).getNombre().equals(pqm.getUserReceptor())){
+		      result = true;
+		      noEncontro = false;
+		    }
 		}
 		// Si existe inicio sesion
-		if (result) {
+		if (result)
 			Servidor.log.append(pqm.getUserEmisor() + " envió mensaje a " + pqm.getUserReceptor() + System.lineSeparator());
-				return true;
-		} else {
+		 else 
 			// Si no existe informo y devuelvo false
 			Servidor.log.append("El mensaje para " + pqm.getUserReceptor() + " no se envió, ya que se encuentra desconectado." + System.lineSeparator());
-			return false;
-		}
+			
+		return result;
+
 	}
 	
 	public static boolean mensajeAAll(int contador) {
