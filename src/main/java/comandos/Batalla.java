@@ -22,14 +22,14 @@ public class Batalla extends ComandosServer {
 
 			// seteo estado de batalla
 			Servidor.getPersonajesConectados().get(escuchaCliente.getPaqueteBatalla().getId())
-					.setEstado(Estado.estadoBatalla);
+					.setEstado(Estado.getEstadoBatalla());
 	
 			if (escuchaCliente.getPaqueteBatalla().getTipoBatalla() == PaqueteBatalla.BATALLAPERSONAJE) {
 				Servidor.getPersonajesConectados().get(escuchaCliente.getPaqueteBatalla().getIdEnemigo())
-				.setEstado(Estado.estadoBatalla);
+				.setEstado(Estado.getEstadoBatalla());
 			}else{
 				Servidor.getPersonajesNPC().get(escuchaCliente.getPaqueteBatalla().getIdEnemigo())
-				.setEstado(Estado.estadoBatalla);
+				.setEstado(Estado.getEstadoBatalla());
 			}
 			escuchaCliente.getPaqueteBatalla().setMiTurno(true);
 			escuchaCliente.getSalida().writeObject(gson.toJson(escuchaCliente.getPaqueteBatalla()));
