@@ -28,7 +28,5 @@ public class ActualizarPersonaje extends ComandosServer {
 						+ conectado.getPaquetePersonaje().getId() + "\n");
 			}
 		}
-
 	}
-
 }
