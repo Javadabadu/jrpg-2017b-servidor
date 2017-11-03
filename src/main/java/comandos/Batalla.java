@@ -14,7 +14,7 @@ public class Batalla extends ComandosServer {
 	@Override
 	public void ejecutar() {
 		// Le reenvio al id del personaje batallado que quieren pelear
-		escuchaCliente.setPaqueteBatalla((PaqueteBatalla) gson.fromJson(cadenaLeida, PaqueteBatalla.class));
+		escuchaCliente.setPaqueteBatalla((PaqueteBatalla) getGson().fromJson(cadenaLeida, PaqueteBatalla.class));
 
 		Servidor.log.append(escuchaCliente.getPaqueteBatalla().getId() + " quiere batallar con "
 				+ escuchaCliente.getPaqueteBatalla().getIdEnemigo() + System.lineSeparator());
@@ -32,7 +32,7 @@ public class Batalla extends ComandosServer {
 				.setEstado(Estado.getEstadoBatalla());
 			}
 			escuchaCliente.getPaqueteBatalla().setMiTurno(true);
-			escuchaCliente.getSalida().writeObject(gson.toJson(escuchaCliente.getPaqueteBatalla()));
+			escuchaCliente.getSalida().writeObject(getGson().toJson(escuchaCliente.getPaqueteBatalla()));
 			
 			for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
 				if (escuchaCliente.getPaqueteBatalla().getTipoBatalla() == PaqueteBatalla.BATALLAPERSONAJE) {
@@ -41,13 +41,13 @@ public class Batalla extends ComandosServer {
 						escuchaCliente.getPaqueteBatalla().setId(escuchaCliente.getPaqueteBatalla().getIdEnemigo());
 						escuchaCliente.getPaqueteBatalla().setIdEnemigo(aux);
 						escuchaCliente.getPaqueteBatalla().setMiTurno(false);
-						conectado.getSalida().writeObject(gson.toJson(escuchaCliente.getPaqueteBatalla()));
+						conectado.getSalida().writeObject(getGson().toJson(escuchaCliente.getPaqueteBatalla()));
 						break;
 					}
 				} else {
 					PaqueteDeNPC paqueteNPC = (PaqueteDeNPC) new PaqueteDeNPC(Servidor.getPersonajesNPC()).clone();
 					paqueteNPC.setComando(Comando.ACTUALIZARNPC);
-					conectado.getSalida().writeObject(gson.toJson(paqueteNPC));
+					conectado.getSalida().writeObject(getGson().toJson(paqueteNPC));
 				}
 			}
 		} catch (IOException e) {

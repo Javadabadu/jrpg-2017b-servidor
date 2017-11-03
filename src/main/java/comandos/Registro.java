@@ -14,18 +14,18 @@ public class Registro extends ComandosServer {
 		Paquete paqueteSv = new Paquete(null, 0);
 		paqueteSv.setComando(Comando.REGISTRO);
 		
-		escuchaCliente.setPaqueteUsuario((PaqueteUsuario) (gson.fromJson(cadenaLeida, PaqueteUsuario.class)).clone());
+		escuchaCliente.setPaqueteUsuario((PaqueteUsuario) (getGson().fromJson(cadenaLeida, PaqueteUsuario.class)).clone());
 
 		// Si el usuario se pudo registrar le envio un msj de exito
 		try {
 			if (Servidor.getConector().registrarUsuario(escuchaCliente.getPaqueteUsuario())) {
 				paqueteSv.setMensaje(Paquete.getMsjExito());
-				escuchaCliente.getSalida().writeObject(gson.toJson(paqueteSv));
+				escuchaCliente.getSalida().writeObject(getGson().toJson(paqueteSv));
 
 				// Si el usuario no se pudo registrar le envio un msj de fracaso
 			} else {
 				paqueteSv.setMensaje(Paquete.getMsjFracaso());
-				escuchaCliente.getSalida().writeObject(gson.toJson(paqueteSv));
+				escuchaCliente.getSalida().writeObject(getGson().toJson(paqueteSv));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

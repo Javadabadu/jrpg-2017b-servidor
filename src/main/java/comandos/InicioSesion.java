@@ -17,7 +17,7 @@ public class InicioSesion extends ComandosServer {
 		paqueteSv.setComando(Comando.INICIOSESION);
 		
 		// Recibo el paquete usuario
-		escuchaCliente.setPaqueteUsuario((PaqueteUsuario) (gson.fromJson(cadenaLeida, PaqueteUsuario.class)));
+		escuchaCliente.setPaqueteUsuario((PaqueteUsuario) (getGson().fromJson(cadenaLeida, PaqueteUsuario.class)));
 		
 		// Si se puede loguear el usuario le envio un mensaje de exito y el paquete personaje con los datos
 		try {
@@ -29,16 +29,16 @@ public class InicioSesion extends ComandosServer {
 				paquetePersonaje.setMensaje(Paquete.getMsjExito());
 				escuchaCliente.setIdPersonaje(paquetePersonaje.getId());
 
-				escuchaCliente.getSalida().writeObject(gson.toJson(paquetePersonaje));
+				escuchaCliente.getSalida().writeObject(getGson().toJson(paquetePersonaje));
 				
 				//Manejo de NPC
 				PaqueteDeNPC paqueteNPC = (PaqueteDeNPC) new PaqueteDeNPC(Servidor.getPersonajesNPC()).clone();
 				paqueteNPC.setComando(Comando.ACTUALIZARNPC);				
-				escuchaCliente.getSalida().writeObject(gson.toJson(paqueteNPC));
+				escuchaCliente.getSalida().writeObject(getGson().toJson(paqueteNPC));
 
 			} else {
 				paqueteSv.setMensaje(Paquete.getMsjFracaso());
-				escuchaCliente.getSalida().writeObject(gson.toJson(paqueteSv));
+				escuchaCliente.getSalida().writeObject(getGson().toJson(paqueteSv));
 			}
 		} catch (IOException e) {
 			Servidor.log.append("Falló al intentar iniciar sesión \n");

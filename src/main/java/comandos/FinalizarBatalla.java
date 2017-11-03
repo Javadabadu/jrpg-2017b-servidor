@@ -15,7 +15,7 @@ public class FinalizarBatalla extends ComandosServer {
 	@Override
 	public void ejecutar() {
 		
-		PaqueteFinalizarBatalla paqueteFinalizarBatalla = (PaqueteFinalizarBatalla) gson.fromJson(cadenaLeida, PaqueteFinalizarBatalla.class);
+		PaqueteFinalizarBatalla paqueteFinalizarBatalla = (PaqueteFinalizarBatalla) getGson().fromJson(cadenaLeida, PaqueteFinalizarBatalla.class);
 		escuchaCliente.setPaqueteFinalizarBatalla(paqueteFinalizarBatalla);
 		
 		if (paqueteFinalizarBatalla.getTipoBatalla() == PaqueteBatalla.BATALLAPERSONAJE) {
@@ -35,7 +35,7 @@ public class FinalizarBatalla extends ComandosServer {
 			if (paqueteFinalizarBatalla.getTipoBatalla() == PaqueteBatalla.BATALLAPERSONAJE) {
 				if (conectado.getIdPersonaje() == escuchaCliente.getPaqueteFinalizarBatalla().getIdEnemigo()) {
 					try {
-						conectado.getSalida().writeObject(gson.toJson(escuchaCliente.getPaqueteFinalizarBatalla()));
+						conectado.getSalida().writeObject(getGson().toJson(escuchaCliente.getPaqueteFinalizarBatalla()));
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						Servidor.log.append("Falló al intentar enviar finalizarBatalla a:" + conectado.getPaquetePersonaje().getId() + "\n");
@@ -45,7 +45,7 @@ public class FinalizarBatalla extends ComandosServer {
 				PaqueteDeNPC paqueteNPC = (PaqueteDeNPC) new PaqueteDeNPC(Servidor.getPersonajesNPC()).clone();
 				paqueteNPC.setComando(Comando.ACTUALIZARNPC);
 				try {
-					conectado.getSalida().writeObject(gson.toJson(paqueteNPC));
+					conectado.getSalida().writeObject(getGson().toJson(paqueteNPC));
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 

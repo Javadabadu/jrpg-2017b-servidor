@@ -13,7 +13,7 @@ public class ActualizarNPC extends ComandosServer {
 
 	@Override
 	public void ejecutar() {
-		escuchaCliente.setPaqueteNPC((PaqueteNpc)gson.fromJson(cadenaLeida, PaqueteNpc.class));
+		escuchaCliente.setPaqueteNPC((PaqueteNpc)getGson().fromJson(cadenaLeida, PaqueteNpc.class));
 		
 		//Actualizo la salud del NPC
 		if (Servidor.getPersonajesNPC().get( escuchaCliente.getPaqueteNPC().getId()) != null) {
@@ -28,7 +28,7 @@ public class ActualizarNPC extends ComandosServer {
 					PaqueteDeNPC paqueteNPC = (PaqueteDeNPC) new PaqueteDeNPC(Servidor.getPersonajesNPC()).clone();
 					paqueteNPC.setComando(Comando.ACTUALIZARNPC);
 					synchronized (conectado) {
-						conectado.getSalida().writeObject(gson.toJson(paqueteNPC));
+						conectado.getSalida().writeObject(getGson().toJson(paqueteNPC));
 					}
 
 				} catch (IOException e) {
