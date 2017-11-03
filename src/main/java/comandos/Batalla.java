@@ -6,7 +6,10 @@ import estados.Estado;
 import mensajeria.PaqueteBatalla;
 import servidor.EscuchaCliente;
 import servidor.Servidor;
-
+/**
+ *Clase batalla
+ *
+ */
 public class Batalla extends ComandosServer {
 
 	@Override
@@ -29,10 +32,12 @@ public class Batalla extends ComandosServer {
 			for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
 				if (conectado.getIdPersonaje() == escuchaCliente.getPaqueteBatalla().getIdEnemigo()) {
 					int aux = escuchaCliente.getPaqueteBatalla().getId();
-					escuchaCliente.getPaqueteBatalla().setId(escuchaCliente.getPaqueteBatalla().getIdEnemigo());
+					escuchaCliente.getPaqueteBatalla().setId(
+							escuchaCliente.getPaqueteBatalla().getIdEnemigo());
 					escuchaCliente.getPaqueteBatalla().setIdEnemigo(aux);
 					escuchaCliente.getPaqueteBatalla().setMiTurno(false);
-					conectado.getSalida().writeObject(gson.toJson(escuchaCliente.getPaqueteBatalla()));
+					conectado.getSalida().writeObject(
+							gson.toJson(escuchaCliente.getPaqueteBatalla()));
 					break;
 				}
 			}
