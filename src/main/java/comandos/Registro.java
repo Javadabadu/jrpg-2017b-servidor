@@ -6,12 +6,14 @@ import mensajeria.Comando;
 import mensajeria.Paquete;
 import mensajeria.PaqueteUsuario;
 import servidor.Servidor;
-
+/**
+ *Clase donde se registra a un usuario
+ */
 public class Registro extends ComandosServer {
 
 	@Override
 	public void ejecutar() {
-		Paquete paqueteSv = new Paquete(null, 0);
+		Paquete paqueteSv=new Paquete(null,0);
 		paqueteSv.setComando(Comando.REGISTRO);
 		
 		escuchaCliente.setPaqueteUsuario((PaqueteUsuario) (gson.fromJson(cadenaLeida, PaqueteUsuario.class)).clone());
