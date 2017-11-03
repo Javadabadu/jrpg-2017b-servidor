@@ -17,7 +17,7 @@ public class InicioSesion extends ComandosServer {
 		paqueteSv.setComando(Comando.INICIOSESION);
 		
 		// Recibo el paquete usuario
-		escuchaCliente.setPaqueteUsuario((PaqueteUsuario) (getGson().fromJson(cadenaLeida, PaqueteUsuario.class)));
+		escuchaCliente.setPaqueteUsuario((PaqueteUsuario) (getGson().fromJson(getCadenaLeida(), PaqueteUsuario.class)));
 		
 		// Si se puede loguear el usuario le envio un mensaje de exito y el paquete personaje con los datos
 		try {

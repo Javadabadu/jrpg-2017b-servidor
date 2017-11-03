@@ -10,7 +10,7 @@ public class CrearPersonaje extends ComandosServer {
 	@Override
 	public void ejecutar() {
 		// Casteo el paquete personaje
-		escuchaCliente.setPaquetePersonaje((PaquetePersonaje) (getGson().fromJson(cadenaLeida, PaquetePersonaje.class)));
+		escuchaCliente.setPaquetePersonaje((PaquetePersonaje) (getGson().fromJson(getCadenaLeida(), PaquetePersonaje.class)));
 		// Guardo el personaje en ese usuario
 		Servidor.getConector().registrarPersonaje(escuchaCliente.getPaquetePersonaje(), escuchaCliente.getPaqueteUsuario());
 		try {

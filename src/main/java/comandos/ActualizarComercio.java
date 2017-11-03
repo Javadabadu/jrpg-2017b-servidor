@@ -11,7 +11,7 @@ public class ActualizarComercio extends ComandosServer{
 	@Override
 	public void ejecutar() {
 		PaqueteComerciar paqueteComerciar;
-		paqueteComerciar = (PaqueteComerciar) getGson().fromJson(cadenaLeida, PaqueteComerciar.class);
+		paqueteComerciar = (PaqueteComerciar) getGson().fromJson(getCadenaLeida(), PaqueteComerciar.class);
 
 		//BUSCO EN LAS ESCUCHAS AL QUE SE LO TENGO QUE MANDAR
 		for(EscuchaCliente conectado : Servidor.getClientesConectados()) {

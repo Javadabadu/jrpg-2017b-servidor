@@ -14,7 +14,7 @@ public class Batalla extends ComandosServer {
 	@Override
 	public void ejecutar() {
 		// Le reenvio al id del personaje batallado que quieren pelear
-		escuchaCliente.setPaqueteBatalla((PaqueteBatalla) getGson().fromJson(cadenaLeida, PaqueteBatalla.class));
+		escuchaCliente.setPaqueteBatalla((PaqueteBatalla) getGson().fromJson(getCadenaLeida(), PaqueteBatalla.class));
 
 		Servidor.log.append(escuchaCliente.getPaqueteBatalla().getId() + " quiere batallar con "
 				+ escuchaCliente.getPaqueteBatalla().getIdEnemigo() + System.lineSeparator());

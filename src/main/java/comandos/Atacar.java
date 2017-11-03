@@ -10,7 +10,7 @@ public class Atacar extends ComandosServer {
 
 	@Override
 	public void ejecutar() {
-		escuchaCliente.setPaqueteAtacar((PaqueteAtacar) getGson().fromJson(cadenaLeida, PaqueteAtacar.class));
+		escuchaCliente.setPaqueteAtacar((PaqueteAtacar) getGson().fromJson(getCadenaLeida(), PaqueteAtacar.class));
 		for(EscuchaCliente conectado : Servidor.getClientesConectados()) {
 			if(conectado.getIdPersonaje() == escuchaCliente.getPaqueteAtacar().getIdEnemigo()) {
 				try {

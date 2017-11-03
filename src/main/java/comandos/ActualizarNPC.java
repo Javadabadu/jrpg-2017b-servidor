@@ -13,7 +13,7 @@ public class ActualizarNPC extends ComandosServer {
 
 	@Override
 	public void ejecutar() {
-		escuchaCliente.setPaqueteNPC((PaqueteNpc)getGson().fromJson(cadenaLeida, PaqueteNpc.class));
+		escuchaCliente.setPaqueteNPC((PaqueteNpc)getGson().fromJson(getCadenaLeida(), PaqueteNpc.class));
 		
 		//Actualizo la salud del NPC
 		if (Servidor.getPersonajesNPC().get( escuchaCliente.getPaqueteNPC().getId()) != null) {

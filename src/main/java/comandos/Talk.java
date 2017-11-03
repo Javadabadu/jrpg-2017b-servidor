@@ -15,7 +15,7 @@ public class Talk extends ComandosServer {
 	public void ejecutar() {
 		int idUser = 0;
 		int contador = 0;
-		PaqueteMensaje paqueteMensaje = (PaqueteMensaje) (getGson().fromJson(cadenaLeida, PaqueteMensaje.class));
+		PaqueteMensaje paqueteMensaje = (PaqueteMensaje) (getGson().fromJson(getCadenaLeida(), PaqueteMensaje.class));
 		
 		if (!(paqueteMensaje.getUserReceptor() == null)) {
 			if (Servidor.mensajeAUsuario(paqueteMensaje)) {

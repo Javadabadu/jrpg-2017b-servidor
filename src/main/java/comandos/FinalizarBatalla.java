@@ -15,7 +15,7 @@ public class FinalizarBatalla extends ComandosServer {
 	@Override
 	public void ejecutar() {
 		
-		PaqueteFinalizarBatalla paqueteFinalizarBatalla = (PaqueteFinalizarBatalla) getGson().fromJson(cadenaLeida, PaqueteFinalizarBatalla.class);
+		PaqueteFinalizarBatalla paqueteFinalizarBatalla = (PaqueteFinalizarBatalla) getGson().fromJson(getCadenaLeida(), PaqueteFinalizarBatalla.class);
 		escuchaCliente.setPaqueteFinalizarBatalla(paqueteFinalizarBatalla);
 		
 		if (paqueteFinalizarBatalla.getTipoBatalla() == PaqueteBatalla.BATALLAPERSONAJE) {
