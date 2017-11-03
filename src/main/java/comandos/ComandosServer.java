@@ -14,6 +14,5 @@ public abstract class ComandosServer extends Comando {
 	}
 	public EscuchaCliente getEscuchaCliente() {
 		return escuchaCliente;
-	}
-	
+	}	
 }
