@@ -4,7 +4,10 @@ import java.io.IOException;
 
 import mensajeria.Paquete;
 import servidor.Servidor;
-
+/**
+ * Clase para cerrartodo y eliminar al personaje de los clientes conectados
+ *
+ */
 public class Salir extends ComandosServer {
 
 	@Override
@@ -16,7 +19,6 @@ public class Salir extends ComandosServer {
 			escuchaCliente.getSocket().close();
 		} catch (IOException e) {
 			Servidor.log.append("Falló al intentar salir \n");
-
 		}
 		
 		
