@@ -8,7 +8,10 @@ import mensajeria.PaqueteBatalla;
 import mensajeria.PaqueteDeNPC;
 import servidor.EscuchaCliente;
 import servidor.Servidor;
-
+/**
+ *Clase batalla
+ *
+ */
 public class Batalla extends ComandosServer {
 
 	@Override
@@ -35,19 +38,15 @@ public class Batalla extends ComandosServer {
 			escuchaCliente.getSalida().writeObject(getGson().toJson(escuchaCliente.getPaqueteBatalla()));
 			
 			for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
-				if (escuchaCliente.getPaqueteBatalla().getTipoBatalla() == PaqueteBatalla.BATALLAPERSONAJE) {
-					if (conectado.getIdPersonaje() == escuchaCliente.getPaqueteBatalla().getIdEnemigo()) {
-						int aux = escuchaCliente.getPaqueteBatalla().getId();
-						escuchaCliente.getPaqueteBatalla().setId(escuchaCliente.getPaqueteBatalla().getIdEnemigo());
-						escuchaCliente.getPaqueteBatalla().setIdEnemigo(aux);
-						escuchaCliente.getPaqueteBatalla().setMiTurno(false);
-						conectado.getSalida().writeObject(getGson().toJson(escuchaCliente.getPaqueteBatalla()));
-						break;
-					}
-				} else {
-					PaqueteDeNPC paqueteNPC = (PaqueteDeNPC) new PaqueteDeNPC(Servidor.getPersonajesNPC()).clone();
-					paqueteNPC.setComando(Comando.ACTUALIZARNPC);
-					conectado.getSalida().writeObject(getGson().toJson(paqueteNPC));
+				if (conectado.getIdPersonaje() == escuchaCliente.getPaqueteBatalla().getIdEnemigo()) {
+					int aux = escuchaCliente.getPaqueteBatalla().getId();
+					escuchaCliente.getPaqueteBatalla().setId(
+							escuchaCliente.getPaqueteBatalla().getIdEnemigo());
+					escuchaCliente.getPaqueteBatalla().setIdEnemigo(aux);
+					escuchaCliente.getPaqueteBatalla().setMiTurno(false);
+					conectado.getSalida().writeObject(
+							gson.toJson(escuchaCliente.getPaqueteBatalla()));
+					break;
 				}
 			}
 		} catch (IOException e) {

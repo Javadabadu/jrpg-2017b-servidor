@@ -6,15 +6,19 @@ import mensajeria.Comando;
 import mensajeria.Paquete;
 import mensajeria.PaqueteUsuario;
 import servidor.Servidor;
-
+/**
+ * 
+ * Clase para registrar a un usuario
+ *
+ */
 public class Registro extends ComandosServer {
 
 	@Override
 	public void ejecutar() {
 		Paquete paqueteSv = new Paquete(null, 0);
 		paqueteSv.setComando(Comando.REGISTRO);
-		
-		escuchaCliente.setPaqueteUsuario((PaqueteUsuario) (getGson().fromJson(getCadenaLeida(), PaqueteUsuario.class)).clone());
+		escuchaCliente.setPaqueteUsuario((PaqueteUsuario)
+			(gson.fromJson(cadenaLeida,PaqueteUsuario.class)).clone());
 
 		// Si el usuario se pudo registrar le envio un msj de exito
 		try {
