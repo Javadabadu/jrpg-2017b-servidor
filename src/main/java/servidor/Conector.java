@@ -10,6 +10,9 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
 
@@ -17,28 +20,31 @@ public class Conector {
 
 	private String url = "primeraBase.bd";
 	Connection connect;
-
+    private Session session ;
+    
 	public void connect() {
 		try {
 			Servidor.log.append("Estableciendo conexión con la base de datos..." + System.lineSeparator());
-			connect = DriverManager.getConnection("jdbc:sqlite:" + url);
+//			connect = DriverManager.getConnection("jdbc:sqlite:" + url);
+			session = HibernateConector.obtenerSession();
 			Servidor.log.append("Conexión con la base de datos establecida con éxito." + System.lineSeparator());
-		} catch (SQLException ex) {
+		} catch (HibernateException ex) {
 			Servidor.log.append("Fallo al intentar establecer la conexión con la base de datos. " + ex.getMessage()
 					+ System.lineSeparator());
 		}
 	}
 
 	public void close() {
-		try {
-			connect.close();
-		} catch (SQLException ex) {
-			Servidor.log.append("Error al intentar cerrar la conexión con la base de datos." + System.lineSeparator());
-			Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, ex);
-		}
+//		try {
+//			connect.close();
+//		} catch (SQLException ex) {
+//			Servidor.log.append("Error al intentar cerrar la conexión con la base de datos." + System.lineSeparator());
+//			Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, ex);
+//		}
 	}
 
 	public boolean registrarUsuario(PaqueteUsuario user) {
+		
 		ResultSet result = null;
 		try {
 			PreparedStatement st1 = connect.prepareStatement("SELECT * FROM registro WHERE usuario= ? ");
