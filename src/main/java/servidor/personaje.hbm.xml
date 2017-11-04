@@ -3,9 +3,9 @@
 "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-mapping>
 	<class name="mensajeria.PaquetePersonaje" table="personaje">
-		<id column="idPersonaje" name="id" type="int" />
-		<property column="idInventario" name="id" type="int" />
-		<property column="idMochila" name="id" type="int" /> 
+		<id column="idPersonaje" name="id" type="int" /> 
+	    <property column="idInventario" name="idInventario" type="int"/>
+        <property column="idMochila" name="idMochila" type="int" /> 
 		<property column="casta" name="casta" type="string" />
 		<property column="raza" name="raza" type="string" />
 		<property column="fuerza" name="fuerza" type="int" />

@@ -8,11 +8,10 @@
 		<property name="hibernate.connection.driver_class">org.sqlite.JDBC</property>
 		<property name="hibernate.connection.url">jdbc:sqlite:primeraBase.bd</property>
 		<property name="hibernate.dialect">com.enigmabridge.hibernate.dialect.SQLiteDialect</property>
-		<property name="show_sql">false</property>
+		<property name="show_sql">true</property>
 		<property name="format_sql">true</property>
-		<mapping resource="../java/servidor/personaje.hbm.xml" />
-		<mapping resource="servidor.registro.hbm.xml" />
-		
-		<mapping resource="../java/servidor/item.hbm.xml" />
+		<mapping resource="servidor/item.hbm.xml" />	
+		<mapping resource="servidor/registro.hbm.xml" />
+		<mapping resource="servidor/personaje.hbm.xml"/>
 	</session-factory>
 </hibernate-configuration>
