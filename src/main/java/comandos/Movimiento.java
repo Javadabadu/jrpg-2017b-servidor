@@ -11,18 +11,18 @@ public class Movimiento extends ComandosServer {
 
 	@Override
 	public void ejecutar() {
-		escuchaCliente.setPaqueteMovimiento((PaqueteMovimiento)
-				(gson.fromJson((String) cadenaLeida, PaqueteMovimiento.class)));
-		Servidor.getUbicacionPersonajes().get(escuchaCliente.getPaqueteMovimiento().getIdPersonaje()
-											.setPosX(escuchaCliente.getPaqueteMovimiento().getPosX());
-		Servidor.getUbicacionPersonajes().get(escuchaCliente.getPaqueteMovimiento().getIdPersonaje())
-											.setPosY(escuchaCliente.getPaqueteMovimiento().getPosY());
-		Servidor.getUbicacionPersonajes().get(escuchaCliente.getPaqueteMovimiento().getIdPersonaje())
-											.setDireccion(escuchaCliente.getPaqueteMovimiento().getDireccion());
-		Servidor.getUbicacionPersonajes().get(escuchaCliente.getPaqueteMovimiento().getIdPersonaje())
-											.setFrame(escuchaCliente.getPaqueteMovimiento().getFrame());
-		synchronized (Servidor.atencionMovimientos) {
-			Servidor.atencionMovimientos.notify();
+		getEscuchaCliente().setPaqueteMovimiento((PaqueteMovimiento)
+				(getGson().fromJson((String) getCadenaLeida(), PaqueteMovimiento.class)));
+		Servidor.getUbicacionPersonajes().get(getEscuchaCliente().getPaqueteMovimiento().getIdPersonaje())
+											.setPosX(getEscuchaCliente().getPaqueteMovimiento().getPosX());
+		Servidor.getUbicacionPersonajes().get(getEscuchaCliente().getPaqueteMovimiento().getIdPersonaje())
+											.setPosY(getEscuchaCliente().getPaqueteMovimiento().getPosY());
+		Servidor.getUbicacionPersonajes().get(getEscuchaCliente().getPaqueteMovimiento().getIdPersonaje())
+											.setDireccion(getEscuchaCliente().getPaqueteMovimiento().getDireccion());
+		Servidor.getUbicacionPersonajes().get(getEscuchaCliente().getPaqueteMovimiento().getIdPersonaje())
+											.setFrame(getEscuchaCliente().getPaqueteMovimiento().getFrame());
+		synchronized (Servidor.getAtencionMovimientos()) {
+			Servidor.getAtencionMovimientos().notify();
 		}
 	}
 }

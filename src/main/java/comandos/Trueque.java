@@ -22,7 +22,7 @@ public class Trueque extends ComandosServer {
 				try {
 					conectado.getSalida().writeObject(getGson().toJson(paqueteComerciar));
 				} catch (IOException e) {
-					Servidor.log.append("Falló al intentar enviar trueque a:"
+					Servidor.getLog().append("Falló al intentar enviar trueque a:"
 							+ conectado.getPaquetePersonaje().getId() + "\n");
 				}
 		}
@@ -30,7 +30,7 @@ public class Trueque extends ComandosServer {
 				try {
 					conectado.getSalida().writeObject(getGson().toJson(paqueteComerciar));
 				} catch (IOException e) {
-					Servidor.log.append("Falló al intentar enviar trueque a:"
+					Servidor.getLog().append("Falló al intentar enviar trueque a:"
 				+ conectado.getPaquetePersonaje().getId() + "\n");
 				}
 			}

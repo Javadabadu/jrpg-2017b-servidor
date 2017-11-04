@@ -90,10 +90,10 @@ public class EscuchaCliente extends Thread {
 				conectado.salida.writeObject(gson.toJson(
 									paqueteDePersonajes, PaqueteDePersonajes.class));
 			}
-			Servidor.log.append(paquete.getIp() + " se ha desconectado."
+			Servidor.getLog().append(paquete.getIp() + " se ha desconectado."
 						+ System.lineSeparator());
 		} catch (IOException | ClassNotFoundException e) {
-			Servidor.log.append("Error de conexion: "
+			Servidor.getLog().append("Error de conexion: "
 						+ e.getMessage() + System.lineSeparator());
 		}
 	}
@@ -245,12 +245,12 @@ public class EscuchaCliente extends Thread {
 		this.paqueteUsuario = paqueteUsuario;
 	}
 	
-	public PaqueteNpc getPaqueteNPC() {
-		return paqueteNPC;
-	}
-
-	public void setPaqueteNPC(PaqueteNpc paqueteNPC) {
-		this.paqueteNPC = paqueteNPC;
-	}
+//	public PaqueteNpc getPaqueteNPC() {
+//		return paqueteNPC;
+//	}
+//
+//	public void setPaqueteNPC(PaqueteNpc paqueteNPC) {
+//		this.paqueteNPC = paqueteNPC;
+//	}
 }
 

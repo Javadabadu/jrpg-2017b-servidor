@@ -30,7 +30,7 @@ public class AtencionConexiones extends Thread {
 					// Le reenvio la conexion a todos
 					for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
 						if (conectado.getPaquetePersonaje().getEstado() 
-								!= Estado.estadoOffline) {
+								!= Estado.getEstadoOffline()) {
 							
 							PaqueteDePersonajes pdp = (PaqueteDePersonajes) new
 										PaqueteDePersonajes(Servidor.getPersonajesConectados()).clone();
@@ -42,7 +42,7 @@ public class AtencionConexiones extends Thread {
 					}
 				}
 			} catch (Exception e) {
-				Servidor.log.append("Falló al intentar enviar paqueteDePersonajes\n");
+				Servidor.getLog().append("Falló al intentar enviar paqueteDePersonajes\n");
 			}
 		}
 	}

@@ -16,7 +16,7 @@ public class Comercio extends ComandosServer  {
 	public void ejecutar() {
 		PaqueteComerciar paqueteComerciar;
 
-		paqueteComerciar = (PaqueteComerciar) gson.fromJson(cadenaLeida, PaqueteComerciar.class);
+		paqueteComerciar = (PaqueteComerciar) getGson().fromJson(getCadenaLeida(), PaqueteComerciar.class);
 
 		//BUSCO EN LAS ESCUCHAS AL QUE SE LO TENGO QUE MANDAR
 		for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
@@ -24,7 +24,7 @@ public class Comercio extends ComandosServer  {
 				try {
 					conectado.getSalida().writeObject(getGson().toJson(paqueteComerciar));
 				} catch (IOException e) {
-					Servidor.log.append("Falló al intentar enviar comercio a:"
+					Servidor.getLog().append("Falló al intentar enviar comercio a:"
 							+conectado.getPaquetePersonaje().getId() + "\n");
 				}
 			}
