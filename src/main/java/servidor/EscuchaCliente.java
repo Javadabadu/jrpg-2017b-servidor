@@ -18,15 +18,17 @@ import mensajeria.PaqueteFinalizarBatalla;
 import mensajeria.PaqueteMovimiento;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
-
+/**
+ * 
+ * @author Javadabadu
+ *
+ */
 public class EscuchaCliente extends Thread {
-
 	private final Socket socket;
 	private final ObjectInputStream entrada;
 	private final ObjectOutputStream salida;
 	private int idPersonaje;
 	private final Gson gson = new Gson();
-	
 	private PaquetePersonaje paquetePersonaje;
 	private PaqueteMovimiento paqueteMovimiento;
 	private PaqueteBatalla paqueteBatalla;
@@ -35,14 +37,24 @@ public class EscuchaCliente extends Thread {
 	private PaqueteUsuario paqueteUsuario;
 	private PaqueteDeMovimientos paqueteDeMovimiento;
 	private PaqueteDePersonajes paqueteDePersonajes;
-
-	public EscuchaCliente(String ip, Socket socket, ObjectInputStream entrada, ObjectOutputStream salida) throws IOException {
+/**
+ * Escucha cliente
+ * @param ip
+ * @param socket
+ * @param entrada
+ * @param salida
+ * @throws IOException
+ */
+	public EscuchaCliente(final String ip,final Socket socket,
+							final ObjectInputStream entrada,final ObjectOutputStream salida) throws IOException {
 		this.socket = socket;
 		this.entrada = entrada;
 		this.salida = salida;
 		paquetePersonaje = new PaquetePersonaje();
 	}
-
+/**
+ * Metodo run
+ */
 	public void run() {
 		try {
 			ComandosServer comand;
@@ -52,7 +64,8 @@ public class EscuchaCliente extends Thread {
 
 			String cadenaLeida = (String) entrada.readObject();
 		
-			while (!((paquete = gson.fromJson(cadenaLeida, Paquete.class)).getComando() == Comando.DESCONECTAR)){
+			while (!((paquete = gson.fromJson(cadenaLeida, Paquete.class)).getComando()
+					== Comando.DESCONECTAR)) {
 								
 
 				comand = (ComandosServer) paquete.getObjeto(Comando.NOMBREPAQUETE);
@@ -73,97 +86,161 @@ public class EscuchaCliente extends Thread {
 			for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
 				paqueteDePersonajes = new PaqueteDePersonajes(Servidor.getPersonajesConectados());
 				paqueteDePersonajes.setComando(Comando.CONEXION);
-				conectado.salida.writeObject(gson.toJson(paqueteDePersonajes, PaqueteDePersonajes.class));
+				conectado.salida.writeObject(gson.toJson(
+									paqueteDePersonajes, PaqueteDePersonajes.class));
 			}
-
-			Servidor.log.append(paquete.getIp() + " se ha desconectado." + System.lineSeparator());
-
+			Servidor.log.append(paquete.getIp() + " se ha desconectado."
+						+ System.lineSeparator());
 		} catch (IOException | ClassNotFoundException e) {
-			Servidor.log.append("Error de conexion: " + e.getMessage() + System.lineSeparator());
-		} 
+			Servidor.log.append("Error de conexion: "
+						+ e.getMessage() + System.lineSeparator());
+		}
 	}
-	
+/**
+ * devuelve socket
+ * @return
+ */
 	public Socket getSocket() {
 		return socket;
 	}
-	
+/**
+ * devuelve entrada
+ * @return
+ */
 	public ObjectInputStream getEntrada() {
 		return entrada;
 	}
-	
+/**
+ * devuelve salida
+ * @return
+ */
 	public ObjectOutputStream getSalida() {
 		return salida;
 	}
-	
-	public PaquetePersonaje getPaquetePersonaje(){
+/**
+ * devuelve paquete personaje
+ * @return
+ */
+	public PaquetePersonaje getPaquetePersonaje() {
 		return paquetePersonaje;
 	}
-	
+/**
+ * devuelve id personaje
+ * @return
+ */
 	public int getIdPersonaje() {
 		return idPersonaje;
 	}
-
+/**
+ * devuelve paquete movimiento
+ * @return
+ */
 	public PaqueteMovimiento getPaqueteMovimiento() {
 		return paqueteMovimiento;
 	}
-
-	public void setPaqueteMovimiento(PaqueteMovimiento paqueteMovimiento) {
+/**
+ * settea paquete movimiento
+ * @param paqueteMovimiento
+ */
+	public void setPaqueteMovimiento(final PaqueteMovimiento paqueteMovimiento) {
 		this.paqueteMovimiento = paqueteMovimiento;
 	}
-
+/**
+ * devuelve paquete batalla
+ * @return
+ */
 	public PaqueteBatalla getPaqueteBatalla() {
 		return paqueteBatalla;
 	}
-
-	public void setPaqueteBatalla(PaqueteBatalla paqueteBatalla) {
+/**
+ * settea paquete batalla
+ * @param paqueteBatalla
+ */
+	public void setPaqueteBatalla(final PaqueteBatalla paqueteBatalla) {
 		this.paqueteBatalla = paqueteBatalla;
 	}
-
+/**
+ * devuelve paquete atacar
+ * @return
+ */
 	public PaqueteAtacar getPaqueteAtacar() {
 		return paqueteAtacar;
 	}
-
-	public void setPaqueteAtacar(PaqueteAtacar paqueteAtacar) {
+/**
+ * settea paquete atacar
+ * @param paqueteAtacar
+ */
+	public void setPaqueteAtacar(final PaqueteAtacar paqueteAtacar) {
 		this.paqueteAtacar = paqueteAtacar;
 	}
-
+/**
+ * devuelve paquete finalizar batalla
+ * @return
+ */
 	public PaqueteFinalizarBatalla getPaqueteFinalizarBatalla() {
 		return paqueteFinalizarBatalla;
 	}
-
+/**
+ * settea paquete finalizar batalla
+ * @param paqueteFinalizarBatalla
+ */
 	public void setPaqueteFinalizarBatalla(PaqueteFinalizarBatalla paqueteFinalizarBatalla) {
 		this.paqueteFinalizarBatalla = paqueteFinalizarBatalla;
 	}
-
+/**
+ * devuelve paquete de movimiento
+ * @return
+ */
 	public PaqueteDeMovimientos getPaqueteDeMovimiento() {
 		return paqueteDeMovimiento;
 	}
-
-	public void setPaqueteDeMovimiento(PaqueteDeMovimientos paqueteDeMovimiento) {
+/**
+ * settea paquete de movimiento
+ * @param paqueteDeMovimiento
+ */
+	public void setPaqueteDeMovimiento(final PaqueteDeMovimientos paqueteDeMovimiento) {
 		this.paqueteDeMovimiento = paqueteDeMovimiento;
 	}
-
+/**
+ * devuelve paquete de personajes
+ * @return
+ */
 	public PaqueteDePersonajes getPaqueteDePersonajes() {
 		return paqueteDePersonajes;
 	}
-
-	public void setPaqueteDePersonajes(PaqueteDePersonajes paqueteDePersonajes) {
+/**
+ * settea paquete de personajes
+ * @param paqueteDePersonajes
+ */
+	public void setPaqueteDePersonajes(final PaqueteDePersonajes paqueteDePersonajes) {
 		this.paqueteDePersonajes = paqueteDePersonajes;
 	}
-
+/**
+ * devuelve idPersonaje
+ * @param idPersonaje
+ */
 	public void setIdPersonaje(int idPersonaje) {
 		this.idPersonaje = idPersonaje;
 	}
-
-	public void setPaquetePersonaje(PaquetePersonaje paquetePersonaje) {
+/**
+ * settea paquete personaje
+ * @param paquetePersonaje
+ */
+	public void setPaquetePersonaje(final PaquetePersonaje paquetePersonaje) {
 		this.paquetePersonaje = paquetePersonaje;
 	}
-
+/**
+ * devuelve paquete usuario
+ * @return
+ */
 	public PaqueteUsuario getPaqueteUsuario() {
 		return paqueteUsuario;
 	}
-
-	public void setPaqueteUsuario(PaqueteUsuario paqueteUsuario) {
+/**
+ * settea Paquete usuario
+ * @param paqueteUsuario
+ */
+	public void setPaqueteUsuario(final PaqueteUsuario paqueteUsuario) {
 		this.paqueteUsuario = paqueteUsuario;
 	}
 }
