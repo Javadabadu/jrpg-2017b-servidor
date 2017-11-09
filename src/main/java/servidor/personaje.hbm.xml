@@ -3,7 +3,7 @@
 "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-mapping>
 	<class name="mensajeria.PaquetePersonaje" table="personaje">
-		<id column="idPersonaje" name="idPersonaje" type="int" /> 
+		<id column="idPersonaje" name="id" type="int" /> 
 	    <property column="idInventario" name="idInventario" type="int"/>
         <property column="idMochila" name="idMochila" type="int" /> 
 		<property column="casta" name="casta" type="string" />
@@ -13,8 +13,8 @@
 		<property column="inteligencia" name="inteligencia" type="int" />
 		<property column="saludTope" name="saludTope" type="int" />
 		<property column="energiaTope" name="energiaTope" type="int" />
-		<property column="nombre" name="password" type="string" />
-		<property column="experiencia" name="password" type="string" />
+		<property column="nombre" name="nombre" type="string" />
+		<property column="experiencia" name="experiencia" type="string" />
 		<property column="nivel" name="nivel" type="int" />
 	</class>
 </hibernate-mapping>
