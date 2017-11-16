@@ -38,6 +38,7 @@ public class EscuchaCliente extends Thread {
 	private PaqueteUsuario paqueteUsuario;
 	private PaqueteDeMovimientos paqueteDeMovimiento;
 	private PaqueteDePersonajes paqueteDePersonajes;
+	private PaqueteNpc paqueteNPC;
 /**
  * Escucha cliente
  * @param ip
@@ -244,6 +245,12 @@ public class EscuchaCliente extends Thread {
 	public void setPaqueteUsuario(final PaqueteUsuario paqueteUsuario) {
 		this.paqueteUsuario = paqueteUsuario;
 	}
+public PaqueteNpc getPaqueteNPC() {
+	return paqueteNPC;
+}
+public void setPaqueteNPC(PaqueteNpc paqueteNPC) {
+	this.paqueteNPC = paqueteNPC;
+}
 	
 //	public PaqueteNpc getPaqueteNPC() {
 //		return paqueteNPC;
