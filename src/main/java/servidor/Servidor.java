@@ -36,6 +36,7 @@ public class Servidor extends Thread {
 	private static ArrayList<EscuchaCliente> clientesConectados = new ArrayList<>();
 	private static Map<Integer, PaqueteMovimiento> ubicacionPersonajes = new HashMap<>();
 	private static Map<Integer, PaquetePersonaje> personajesConectados = new HashMap<>();
+	private static Map<Integer, PaqueteNpc> personajesNPC = new HashMap<>();
 
 	private static Thread server;
 	private static ServerSocket serverSocket;
@@ -313,4 +314,10 @@ public class Servidor extends Thread {
 	public static void setAtencionMovimientos(AtencionMovimientos atencionMovimientos) {
 		Servidor.atencionMovimientos = atencionMovimientos;
 	}
+public static Map<Integer, PaqueteNpc> getPersonajesNPC() {
+	return personajesNPC;
+}
+public static void setPersonajesNPC(Map<Integer, PaqueteNpc> personajesNPC) {
+	Servidor.personajesNPC = personajesNPC;
+}
 }
