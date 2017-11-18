@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import org.hibernate.HibernateException;
@@ -32,10 +33,12 @@ public class Conector {
 
 	public void connect() {
 		try {
+
 			Servidor.log.append("Estableciendo conexión con la base de datos..." + System.lineSeparator());
 			// connect = DriverManager.getConnection("jdbc:sqlite:" + url);
-			session = HibernateConector.obtenerSession();
+			session = HibernateConector.getInstance().obtenerSession();
 			Servidor.log.append("Conexión con la base de datos establecida con éxito." + System.lineSeparator());
+
 		} catch (HibernateException ex) {
 			Servidor.log.append("Fallo al intentar establecer la conexión con la base de datos. " + ex.getMessage()
 					+ System.lineSeparator());
@@ -67,7 +70,8 @@ public class Conector {
 		Transaction tx = null;
 
 		try {
-			connect();
+			if (!session.isConnected())
+				connect();
 			CriteriaBuilder builder = session.getCriteriaBuilder();
 			CriteriaQuery<PaqueteUsuario> query = builder.createQuery(PaqueteUsuario.class);
 			Root<PaqueteUsuario> root = query.from(PaqueteUsuario.class);
@@ -84,11 +88,11 @@ public class Conector {
 			}
 
 		} catch (HibernateException he) {
-			Servidor.log.append("Eror al intentar registrar el usuario " + user.getUsername() + System.lineSeparator());
+			Servidor.log.append("Error al intentar registrar el usuario " + user.getUsername() + System.lineSeparator());
 			System.err.println(he.getMessage());
 			retorno = false;
-		} finally {
-			close();
+			if (tx != null)
+				tx.rollback();
 		}
 
 		return retorno;
@@ -134,30 +138,31 @@ public class Conector {
 		Inventario inventario;
 
 		try {
-			connect();
-			//Primero commiteo al personaje
+			if (!session.isConnected())
+				connect();
+			// Primero commiteo al personaje
 			tx = session.beginTransaction();
 			session.save(paquetePersonaje);
-			tx.commit();
-			//Luego cargo lo demas
-			tx = session.beginTransaction();
+
 			paqueteUsuario.setIdPj(paquetePersonaje.getId());
 			mochila = new Mochila(paquetePersonaje.getId());
 			inventario = new Inventario(paquetePersonaje.getId());
+			paquetePersonaje.setIdInventario(paquetePersonaje.getId());
+			paquetePersonaje.setIdMochila(paquetePersonaje.getId());
+			session.update(paquetePersonaje);
 			session.update(paqueteUsuario);
 			session.save(mochila);
 			session.save(inventario);
-			
+			tx.commit();
 		} catch (HibernateException he) {
 			Servidor.log.append(
 					"Error al intentar crear el personaje " + paquetePersonaje.getNombre() + System.lineSeparator());
+			he.getStackTrace();
 			retorno = false;
-		} finally {
-			close();
+			if (tx != null)
+				tx.rollback();
 		}
-		
-		
-		
+
 		return retorno;
 	}
 	// public boolean registrarPersonaje(PaquetePersonaje paquetePersonaje,
@@ -264,34 +269,67 @@ public class Conector {
 	}
 
 	public boolean loguearUsuario(PaqueteUsuario user) {
-		ResultSet result = null;
+		
+		boolean retorno = true;
 		try {
-			// Busco usuario y contraseña
-			PreparedStatement st = connect
-					.prepareStatement("SELECT * FROM registro WHERE usuario = ? AND password = ? ");
-			st.setString(1, user.getUsername());
-			st.setString(2, user.getPassword());
-			result = st.executeQuery();
-
-			// Si existe inicio sesion
-			if (result.next()) {
+			if (!session.isConnected())
+				connect();
+			CriteriaBuilder builder = session.getCriteriaBuilder();
+			CriteriaQuery<PaqueteUsuario> query = builder.createQuery(PaqueteUsuario.class);
+			Root<PaqueteUsuario> root = query.from(PaqueteUsuario.class);
+			Predicate predicado = builder.conjunction();
+			predicado = builder.equal(root.get("username"), user.getUsername());
+			predicado = builder.and(predicado, builder.equal(root.get("password"), user.getPassword()));
+			query.select(root).where(predicado);
+			//query.select(root).where(builder.equal(root.get("username"), user.getUsername()));
+			//query.select(root).where(builder.and(builder.equal(root.get("password"), user.getPassword())));
+			List<PaqueteUsuario> consulta = session.createQuery(query).getResultList();
+			
+			if(consulta.size() == 0) {
+				Servidor.log.append("El usuario " + user.getUsername()
+				+ " ha realizado un intento fallido de inicio de sesión." + System.lineSeparator());
+				retorno = false;
+			}else {
 				Servidor.log
-						.append("El usuario " + user.getUsername() + " ha iniciado sesión." + System.lineSeparator());
-				return true;
+				.append("El usuario " + user.getUsername() + " ha iniciado sesión." + System.lineSeparator());
 			}
-
-			// Si no existe informo y devuelvo false
-			Servidor.log.append("El usuario " + user.getUsername()
-					+ " ha realizado un intento fallido de inicio de sesión." + System.lineSeparator());
-			return false;
-
-		} catch (SQLException e) {
+		}catch(HibernateException he) {
 			Servidor.log
-					.append("El usuario " + user.getUsername() + " fallo al iniciar sesión." + System.lineSeparator());
-			return false;
+			.append("El usuario " + user.getUsername() + " fallo al iniciar sesión." + System.lineSeparator());
+			retorno = false;
 		}
-
+		
+		return retorno ; 
 	}
+//	public boolean loguearUsuario(PaqueteUsuario user) {
+//		ResultSet result = null;
+//		try {
+//			// Busco usuario y contraseña
+//			PreparedStatement st = connect
+//					.prepareStatement("SELECT * FROM registro WHERE usuario = ? AND password = ? ");
+//			st.setString(1, user.getUsername());
+//			st.setString(2, user.getPassword());
+//			result = st.executeQuery();
+//
+//			// Si existe inicio sesion
+//			if (result.next()) {
+//				Servidor.log
+//						.append("El usuario " + user.getUsername() + " ha iniciado sesión." + System.lineSeparator());
+//				return true;
+//			}
+//
+//			// Si no existe informo y devuelvo false
+//			Servidor.log.append("El usuario " + user.getUsername()
+//					+ " ha realizado un intento fallido de inicio de sesión." + System.lineSeparator());
+//			return false;
+//
+//		} catch (SQLException e) {
+//			Servidor.log
+//					.append("El usuario " + user.getUsername() + " fallo al iniciar sesión." + System.lineSeparator());
+//			return false;
+//		}
+//
+//	}
 
 	public void actualizarPersonaje(PaquetePersonaje paquetePersonaje) {
 		try {

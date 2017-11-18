@@ -10,7 +10,8 @@ import org.hibernate.cfg.Configuration;
  */
 public class HibernateConector {
 
-	private static Session session;
+	private static HibernateConector instance;
+	private Session session;
 	private SessionFactory factory;
 
 	/*
@@ -29,11 +30,13 @@ public class HibernateConector {
 
 	}
 
-	public static Session obtenerSession() {
+	public static HibernateConector getInstance() {
+		if (instance == null)
+			instance = new HibernateConector();
+		return instance;
+	}
 
-		if (session == null)
-			new HibernateConector();
-
+	public Session obtenerSession() {
 		return session;
 	}
 

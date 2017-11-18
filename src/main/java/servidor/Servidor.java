@@ -130,6 +130,8 @@ public class Servidor extends Thread {
 							cliente.getSocket().close();
 						}
 						serverSocket.close();
+						
+						
 						log.append("El servidor se ha detenido." + System.lineSeparator());
 					} catch (IOException e) {
 						log.append("Fallo al intentar detener el servidor." + System.lineSeparator());
