@@ -16,18 +16,19 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import dominio.Inventario;
+import dominio.Item;
 import dominio.Mochila;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
 
 public class Conector {
 
-	private String url = "primeraBase.bd";
 	Connection connect;
 	private Session session;
 
@@ -49,21 +50,14 @@ public class Conector {
 	public void close() {
 
 		try {
-			session.close();
+			if (session.isConnected()) {
+				session.close();
+			}
 		} catch (HibernateException he) {
 			Servidor.log.append("Error al intentar cerrar la conexión con la base de datos." + System.lineSeparator());
 			Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, he);
 		}
 	}
-	// public void close() {
-	// try {
-	// connect.close();
-	// } catch (SQLException ex) {
-	// Servidor.log.append("Error al intentar cerrar la conexión con la base de
-	// datos." + System.lineSeparator());
-	// Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, ex);
-	// }
-	// }
 
 	public boolean registrarUsuario(PaqueteUsuario user) {
 		boolean retorno = true;
@@ -88,7 +82,8 @@ public class Conector {
 			}
 
 		} catch (HibernateException he) {
-			Servidor.log.append("Error al intentar registrar el usuario " + user.getUsername() + System.lineSeparator());
+			Servidor.log
+					.append("Error al intentar registrar el usuario " + user.getUsername() + System.lineSeparator());
 			System.err.println(he.getMessage());
 			retorno = false;
 			if (tx != null)
@@ -98,39 +93,6 @@ public class Conector {
 		return retorno;
 	}
 
-	// public boolean registrarUsuario(PaqueteUsuario user) {
-	//
-	// ResultSet result = null;
-	// try {
-	// PreparedStatement st1 = connect.prepareStatement("SELECT * FROM registro
-	// WHERE usuario= ? ");
-	// st1.setString(1, user.getUsername());
-	// result = st1.executeQuery();
-	//
-	// if (!result.next()) {
-	//
-	// PreparedStatement st = connect.prepareStatement("INSERT INTO registro
-	// (usuario, password, idPersonaje) VALUES (?,?,?)");
-	// st.setString(1, user.getUsername());
-	// st.setString(2, user.getPassword());
-	// st.setInt(3, user.getIdPj());
-	// st.execute();
-	// Servidor.log.append("El usuario " + user.getUsername() + " se ha registrado."
-	// + System.lineSeparator());
-	// return true;
-	// } else {
-	// Servidor.log.append("El usuario " + user.getUsername() + " ya se encuentra en
-	// uso." + System.lineSeparator());
-	// return false;
-	// }
-	// } catch (SQLException ex) {
-	// Servidor.log.append("Eror al intentar registrar el usuario " +
-	// user.getUsername() + System.lineSeparator());
-	// System.err.println(ex.getMessage());
-	// return false;
-	// }
-	//
-	// }
 	public boolean registrarPersonaje(PaquetePersonaje paquetePersonaje, PaqueteUsuario paqueteUsuario) {
 		boolean retorno = true;
 		Transaction tx = null;
@@ -165,111 +127,83 @@ public class Conector {
 
 		return retorno;
 	}
-	// public boolean registrarPersonaje(PaquetePersonaje paquetePersonaje,
-	// PaqueteUsuario paqueteUsuario) {
-	//
-	// try {
-	//
-	// // Registro al personaje en la base de datos
-	// PreparedStatement stRegistrarPersonaje = connect.prepareStatement(
-	// "INSERT INTO personaje (idInventario,
-	// idMochila,casta,raza,fuerza,destreza,inteligencia,saludTope,energiaTope,nombre,experiencia,nivel,idAlianza)
-	// VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-	// PreparedStatement.RETURN_GENERATED_KEYS);
-	// stRegistrarPersonaje.setInt(1, -1);
-	// stRegistrarPersonaje.setInt(2, -1);
-	// stRegistrarPersonaje.setString(3, paquetePersonaje.getCasta());
-	// stRegistrarPersonaje.setString(4, paquetePersonaje.getRaza());
-	// stRegistrarPersonaje.setInt(5, paquetePersonaje.getFuerza());
-	// stRegistrarPersonaje.setInt(6, paquetePersonaje.getDestreza());
-	// stRegistrarPersonaje.setInt(7, paquetePersonaje.getInteligencia());
-	// stRegistrarPersonaje.setInt(8, paquetePersonaje.getSaludTope());
-	// stRegistrarPersonaje.setInt(9, paquetePersonaje.getEnergiaTope());
-	// stRegistrarPersonaje.setString(10, paquetePersonaje.getNombre());
-	// stRegistrarPersonaje.setInt(11, 0);
-	// stRegistrarPersonaje.setInt(12, 1);
-	// stRegistrarPersonaje.setInt(13, -1);
-	// stRegistrarPersonaje.execute();
-	//
-	// // Recupero la última key generada
-	// ResultSet rs = stRegistrarPersonaje.getGeneratedKeys();
-	// if (rs != null && rs.next()) {
-	//
-	// // Obtengo el id
-	// int idPersonaje = rs.getInt(1);
-	//
-	// // Le asigno el id al paquete personaje que voy a devolver
-	// paquetePersonaje.setId(idPersonaje);
-	//
-	// // Le asigno el personaje al usuario
-	// PreparedStatement stAsignarPersonaje = connect.prepareStatement("UPDATE
-	// registro SET idPersonaje=? WHERE usuario=? AND password=?");
-	// stAsignarPersonaje.setInt(1, idPersonaje);
-	// stAsignarPersonaje.setString(2, paqueteUsuario.getUsername());
-	// stAsignarPersonaje.setString(3, paqueteUsuario.getPassword());
-	// stAsignarPersonaje.execute();
-	//
-	// // Por ultimo registro el inventario y la mochila
-	// if (this.registrarInventarioMochila(idPersonaje)) {
-	// Servidor.log.append("El usuario " + paqueteUsuario.getUsername() + " ha
-	// creado el personaje "
-	// + paquetePersonaje.getId() + System.lineSeparator());
-	// return true;
-	// } else {
-	// Servidor.log.append("Error al registrar la mochila y el inventario del
-	// usuario " + paqueteUsuario.getUsername() + " con el personaje" +
-	// paquetePersonaje.getId() + System.lineSeparator());
-	// return false;
-	// }
-	// }
-	// return false;
-	//
-	// } catch (SQLException e) {
-	// Servidor.log.append(
-	// "Error al intentar crear el personaje " + paquetePersonaje.getNombre() +
-	// System.lineSeparator());
-	// return false;
-	// }
-	//
-	// }
 
 	public boolean registrarInventarioMochila(int idInventarioMochila) {
+		boolean retorno = true;
+		Transaction tx = session.beginTransaction();
 		try {
-			// Preparo la consulta para el registro el inventario en la base de
-			// datos
-			PreparedStatement stRegistrarInventario = connect.prepareStatement(
-					"INSERT INTO inventario(idInventario,manos1,manos2,pie,cabeza,pecho,accesorio) VALUES (?,-1,-1,-1,-1,-1,-1)");
-			stRegistrarInventario.setInt(1, idInventarioMochila);
+			Mochila mochila = new Mochila(idInventarioMochila);
+			Inventario inventario = new Inventario(idInventarioMochila);
+			if (!session.isConnected())
+				connect();
 
-			// Preparo la consulta para el registro la mochila en la base de
-			// datos
-			PreparedStatement stRegistrarMochila = connect.prepareStatement(
-					"INSERT INTO mochila(idMochila,item1,item2,item3,item4,item5,item6,item7,item8,item9,item10,item11,item12,item13,item14,item15,item16,item17,item18,item19,item20) VALUES(?,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1)");
-			stRegistrarMochila.setInt(1, idInventarioMochila);
+			CriteriaBuilder builder = session.getCriteriaBuilder();
+			CriteriaQuery<PaquetePersonaje> query = builder.createQuery(PaquetePersonaje.class);
+			Root<PaquetePersonaje> root = query.from(PaquetePersonaje.class);
+			query.select(root).where(builder.equal(root.get("id"), idInventarioMochila));
+			List<PaquetePersonaje> consulta = session.createQuery(query).getResultList();
 
-			// Registro inventario y mochila
-			stRegistrarInventario.execute();
-			stRegistrarMochila.execute();
+			if (consulta.size() == 0) {
+				Servidor.log
+						.append("Error: No se encontro el personaje " + idInventarioMochila + System.lineSeparator());
+				retorno = false;
+			} else {
+				// Obtengo el personaje y lo actualizo
+				PaquetePersonaje personaje = consulta.get(0);
+				session.save(mochila);
+				session.save(inventario);
+				personaje.setIdMochila(idInventarioMochila);
+				personaje.setIdInventario(idInventarioMochila);
+				session.update(personaje);
+				Servidor.log
+						.append("Se ha registrado el inventario de " + idInventarioMochila + System.lineSeparator());
 
-			// Le asigno el inventario y la mochila al personaje
-			PreparedStatement stAsignarPersonaje = connect
-					.prepareStatement("UPDATE personaje SET idInventario=?, idMochila=? WHERE idPersonaje=?");
-			stAsignarPersonaje.setInt(1, idInventarioMochila);
-			stAsignarPersonaje.setInt(2, idInventarioMochila);
-			stAsignarPersonaje.setInt(3, idInventarioMochila);
-			stAsignarPersonaje.execute();
+			}
 
-			Servidor.log.append("Se ha registrado el inventario de " + idInventarioMochila + System.lineSeparator());
-			return true;
-
-		} catch (SQLException e) {
+		} catch (HibernateException e) {
 			Servidor.log.append("Error al registrar el inventario de " + idInventarioMochila + System.lineSeparator());
-			return false;
+			if (tx != null)
+				tx.rollback();
+			retorno = false;
 		}
+
+		return retorno;
+
+		// PreparedStatement stAsignarPersonaje = connect
+		// .prepareStatement("UPDATE personaje SET idInventario=?, idMochila=? WHERE
+		// idPersonaje=?");
+		// stAsignarPersonaje.setInt(1, idInventarioMochila);
+		// stAsignarPersonaje.setInt(2, idInventarioMochila);
+		// stAsignarPersonaje.setInt(3, idInventarioMochila);
+		// stAsignarPersonaje.execute();
+		//
+		//
+		// Preparo la consulta para el registro el inventario en la base de
+		// datos
+
+		// PreparedStatement stRegistrarInventario = connect.prepareStatement(
+		// "INSERT INTO
+		// inventario(idInventario,manos1,manos2,pie,cabeza,pecho,accesorio) VALUES
+		// (?,-1,-1,-1,-1,-1,-1)");
+		// stRegistrarInventario.setInt(1, idInventarioMochila);
+		// Preparo la consulta para el registro la mochila en la base de
+		// datos
+		// PreparedStatement stRegistrarMochila = connect.prepareStatement(
+		// "INSERT INTO
+		// mochila(idMochila,item1,item2,item3,item4,item5,item6,item7,item8,item9,item10,item11,item12,item13,item14,item15,item16,item17,item18,item19,item20)
+		// VALUES(?,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1)");
+		// stRegistrarMochila.setInt(1, idInventarioMochila);
+		//
+		// Registro inventario y mochila
+		// stRegistrarInventario.execute();
+		// stRegistrarMochila.execute();
+		//
+
+		// Le asigno el inventario y la mochila al personaje
 	}
 
 	public boolean loguearUsuario(PaqueteUsuario user) {
-		
+
 		boolean retorno = true;
 		try {
 			if (!session.isConnected())
@@ -277,59 +211,207 @@ public class Conector {
 			CriteriaBuilder builder = session.getCriteriaBuilder();
 			CriteriaQuery<PaqueteUsuario> query = builder.createQuery(PaqueteUsuario.class);
 			Root<PaqueteUsuario> root = query.from(PaqueteUsuario.class);
+			// Creacion de predicado para la consulta de usuario y password
 			Predicate predicado = builder.conjunction();
 			predicado = builder.equal(root.get("username"), user.getUsername());
 			predicado = builder.and(predicado, builder.equal(root.get("password"), user.getPassword()));
 			query.select(root).where(predicado);
-			//query.select(root).where(builder.equal(root.get("username"), user.getUsername()));
-			//query.select(root).where(builder.and(builder.equal(root.get("password"), user.getPassword())));
 			List<PaqueteUsuario> consulta = session.createQuery(query).getResultList();
-			
-			if(consulta.size() == 0) {
+
+			if (consulta.size() == 0) {
 				Servidor.log.append("El usuario " + user.getUsername()
-				+ " ha realizado un intento fallido de inicio de sesión." + System.lineSeparator());
+						+ " ha realizado un intento fallido de inicio de sesión." + System.lineSeparator());
 				retorno = false;
-			}else {
+			} else {
 				Servidor.log
-				.append("El usuario " + user.getUsername() + " ha iniciado sesión." + System.lineSeparator());
+						.append("El usuario " + user.getUsername() + " ha iniciado sesión." + System.lineSeparator());
 			}
-		}catch(HibernateException he) {
+		} catch (HibernateException he) {
 			Servidor.log
-			.append("El usuario " + user.getUsername() + " fallo al iniciar sesión." + System.lineSeparator());
+					.append("El usuario " + user.getUsername() + " fallo al iniciar sesión." + System.lineSeparator());
 			retorno = false;
 		}
-		
-		return retorno ; 
+
+		return retorno;
 	}
-//	public boolean loguearUsuario(PaqueteUsuario user) {
+	// public boolean loguearUsuario(PaqueteUsuario user) {
+	// ResultSet result = null;
+	// try {
+	// // Busco usuario y contraseña
+	// PreparedStatement st = connect
+	// .prepareStatement("SELECT * FROM registro WHERE usuario = ? AND password = ?
+	// ");
+	// st.setString(1, user.getUsername());
+	// st.setString(2, user.getPassword());
+	// result = st.executeQuery();
+	//
+	// // Si existe inicio sesion
+	// if (result.next()) {
+	// Servidor.log
+	// .append("El usuario " + user.getUsername() + " ha iniciado sesión." +
+	// System.lineSeparator());
+	// return true;
+	// }
+	//
+	// // Si no existe informo y devuelvo false
+	// Servidor.log.append("El usuario " + user.getUsername()
+	// + " ha realizado un intento fallido de inicio de sesión." +
+	// System.lineSeparator());
+	// return false;
+	//
+	// } catch (SQLException e) {
+	// Servidor.log
+	// .append("El usuario " + user.getUsername() + " fallo al iniciar sesión." +
+	// System.lineSeparator());
+	// return false;
+	// }
+	//
+	// }
+
+	public PaquetePersonaje getPersonaje(PaqueteUsuario user) throws IOException {
+
 //		ResultSet result = null;
-//		try {
-//			// Busco usuario y contraseña
-//			PreparedStatement st = connect
-//					.prepareStatement("SELECT * FROM registro WHERE usuario = ? AND password = ? ");
-//			st.setString(1, user.getUsername());
-//			st.setString(2, user.getPassword());
-//			result = st.executeQuery();
+//		ResultSet resultadoItemsID = null;
+//		ResultSet resultadoDatoItem = null;
+		PaquetePersonaje personaje = new PaquetePersonaje();
+		int i = 2;
+		int j = 0;
+		if (!session.isConnected())
+			connect();
+		Transaction tx = session.beginTransaction();
+		try {
+			// Selecciono el personaje de ese usuario
+			// PreparedStatement st = connect.prepareStatement("SELECT * FROM registro WHERE
+			// usuario = ?");
+			// st.setString(1, user.getUsername());
+			// result = st.executeQuery();
+			CriteriaBuilder builderUsuario = session.getCriteriaBuilder();
+			CriteriaQuery<PaqueteUsuario> query = builderUsuario.createQuery(PaqueteUsuario.class);
+			Root<PaqueteUsuario> root = query.from(PaqueteUsuario.class);
+			query.select(root).where(builderUsuario.equal(root.get("idPersonaje"), user.getIdPj()));
+			// Obtengo el id
+			// int idPersonaje = result.getInt("idPersonaje");
+			List<PaqueteUsuario> consultaUser = session.createQuery(query).getResultList();
+			if (consultaUser.size() != 0) {
+				int idPersonaje = consultaUser.get(0).getIdPj();
+
+				CriteriaBuilder builderPer = session.getCriteriaBuilder();
+				CriteriaQuery<PaquetePersonaje> queryPer = builderPer.createQuery(PaquetePersonaje.class);
+				Root<PaquetePersonaje> rootPer = queryPer.from(PaquetePersonaje.class);
+				queryPer.select(rootPer).where(builderPer.equal(rootPer.get("id"), idPersonaje));
+				List<PaquetePersonaje> consultaPer = session.createQuery(queryPer).getResultList();
+				if(consultaPer.size() != 0)
+					personaje = consultaPer.get(0);
+				
+				CriteriaBuilder builderMochi = session.getCriteriaBuilder();
+				CriteriaQuery<Mochila> queryMochi = builderPer.createQuery(Mochila.class);
+				Root<Mochila> rootMochi = queryMochi.from(Mochila.class);
+				queryMochi.select(rootMochi).where(builderPer.equal(rootMochi.get("idMochila"), idPersonaje));
+				Mochila consultaMochi = session.createQuery(queryMochi).getSingleResult();
+				
+		        // Items
+	             CriteriaBuilder builderItem = session.getCriteriaBuilder();
+	             CriteriaQuery<Item> queryItem = builderItem.createQuery(Item.class);
+	             Root<Item> rootItem = queryItem.from(Item.class);
+
+	            while (j <= 9) {
+	                if (consultaMochi.obtenerItem(i) != -1) {
+	                    queryItem.select(rootItem).where(builderItem.equal(rootItem.get("idItem"), consultaMochi.obtenerItem(i)));
+	                     Item item = session.createQuery(queryItem).getSingleResult();
+
+	                    if (item != null) {
+	                        personaje.anadirItem(item.getIdItem(), item.getNombre(), item.getWearLocation(),
+	                                item.getBonusSalud(), item.getBonusEnergia(), item.getBonusFuerza(),
+	                                item.getBonusDestreza(), item.getBonusInteligencia(), item.getFoto().toString(),
+	                                item.getFotoEquipado());
+	                    }
+	             
+	                }
+	                i++;
+	                j++;
+	            }
+			} else {
+
+			}
+			// Selecciono los datos del personaje
+			// PreparedStatement stSeleccionarPersonaje = connect
+			// .prepareStatement("SELECT * FROM personaje WHERE idPersonaje = ?");
+			// stSeleccionarPersonaje.setInt(1, idPersonaje);
+			// result = stSeleccionarPersonaje.executeQuery();
+			// Traigo los id de los items correspondientes a mi personaje
+			// PreparedStatement stDameItemsID = connect.prepareStatement("SELECT * FROM
+			// mochila WHERE idMochila = ?");
+			// stDameItemsID.setInt(1, idPersonaje);
+			// resultadoItemsID = stDameItemsID.executeQuery();
+			// // Traigo los datos del item
+			// PreparedStatement stDatosItem = connect.prepareStatement("SELECT * FROM item
+			// WHERE idItem = ?");
+
+			// // Obtengo los atributos del personaje
+			// PaquetePersonaje personaje = new PaquetePersonaje();
+			// personaje.setId(idPersonaje);
+			// personaje.setRaza(result.getString("raza"));
+			// personaje.setCasta(result.getString("casta"));
+			// personaje.setFuerza(result.getInt("fuerza"));
+			// personaje.setInteligencia(result.getInt("inteligencia"));
+			// personaje.setDestreza(result.getInt("destreza"));
+			// personaje.setEnergiaTope(result.getInt("energiaTope"));
+			// personaje.setSaludTope(result.getInt("saludTope"));
+			// personaje.setNombre(result.getString("nombre"));
+			// personaje.setExperiencia(result.getInt("experiencia"));
+			// personaje.setNivel(result.getInt("nivel"));
 //
-//			// Si existe inicio sesion
-//			if (result.next()) {
-//				Servidor.log
-//						.append("El usuario " + user.getUsername() + " ha iniciado sesión." + System.lineSeparator());
-//				return true;
+//			while (j <= 9) {
+//				if (resultadoItemsID.getInt(i) != -1) {
+//					stDatosItem.setInt(1, resultadoItemsID.getInt(i));
+//					resultadoDatoItem = stDatosItem.executeQuery();
+//					personaje.anadirItem(resultadoDatoItem.getInt("idItem"), resultadoDatoItem.getString("nombre"),
+//							resultadoDatoItem.getInt("wereable"), resultadoDatoItem.getInt("bonusSalud"),
+//							resultadoDatoItem.getInt("bonusEnergia"), resultadoDatoItem.getInt("bonusFuerza"),
+//							resultadoDatoItem.getInt("bonusDestreza"), resultadoDatoItem.getInt("bonusInteligencia"),
+//							resultadoDatoItem.getString("foto"), resultadoDatoItem.getString("fotoEquipado"));
+//				}
+//				i++;
+//				j++;
 //			}
-//
-//			// Si no existe informo y devuelvo false
-//			Servidor.log.append("El usuario " + user.getUsername()
-//					+ " ha realizado un intento fallido de inicio de sesión." + System.lineSeparator());
-//			return false;
-//
-//		} catch (SQLException e) {
-//			Servidor.log
-//					.append("El usuario " + user.getUsername() + " fallo al iniciar sesión." + System.lineSeparator());
-//			return false;
-//		}
-//
-//	}
+
+			// Devuelvo el paquete personaje con sus datos
+			return personaje;
+
+		} catch (SQLException ex) {
+			Servidor.log
+					.append("Fallo al intentar recuperar el personaje " + user.getUsername() + System.lineSeparator());
+			Servidor.log.append(ex.getMessage() + System.lineSeparator());
+		}
+
+		return new PaquetePersonaje();
+	}
+
+	public PaqueteUsuario getUsuario(String usuario) {
+		ResultSet result = null;
+		PreparedStatement st;
+
+		try {
+			st = connect.prepareStatement("SELECT * FROM registro WHERE usuario = ?");
+			st.setString(1, usuario);
+			result = st.executeQuery();
+
+			String password = result.getString("password");
+			int idPersonaje = result.getInt("idPersonaje");
+
+			PaqueteUsuario paqueteUsuario = new PaqueteUsuario();
+			paqueteUsuario.setUsername(usuario);
+			paqueteUsuario.setPassword(password);
+			paqueteUsuario.setIdPj(idPersonaje);
+
+			return paqueteUsuario;
+		} catch (SQLException e) {
+			Servidor.log.append("Fallo al intentar recuperar el usuario " + usuario + System.lineSeparator());
+			Servidor.log.append(e.getMessage() + System.lineSeparator());
+		}
+
+		return new PaqueteUsuario();
+	}
 
 	public void actualizarPersonaje(PaquetePersonaje paquetePersonaje) {
 		try {
@@ -379,99 +461,6 @@ public class Conector {
 					+ System.lineSeparator());
 		}
 
-	}
-
-	public PaquetePersonaje getPersonaje(PaqueteUsuario user) throws IOException {
-		ResultSet result = null;
-		ResultSet resultadoItemsID = null;
-		ResultSet resultadoDatoItem = null;
-		int i = 2;
-		int j = 0;
-		try {
-			// Selecciono el personaje de ese usuario
-			PreparedStatement st = connect.prepareStatement("SELECT * FROM registro WHERE usuario = ?");
-			st.setString(1, user.getUsername());
-			result = st.executeQuery();
-
-			// Obtengo el id
-			int idPersonaje = result.getInt("idPersonaje");
-
-			// Selecciono los datos del personaje
-			PreparedStatement stSeleccionarPersonaje = connect
-					.prepareStatement("SELECT * FROM personaje WHERE idPersonaje = ?");
-			stSeleccionarPersonaje.setInt(1, idPersonaje);
-			result = stSeleccionarPersonaje.executeQuery();
-			// Traigo los id de los items correspondientes a mi personaje
-			PreparedStatement stDameItemsID = connect.prepareStatement("SELECT * FROM mochila WHERE idMochila = ?");
-			stDameItemsID.setInt(1, idPersonaje);
-			resultadoItemsID = stDameItemsID.executeQuery();
-			// Traigo los datos del item
-			PreparedStatement stDatosItem = connect.prepareStatement("SELECT * FROM item WHERE idItem = ?");
-
-			// Obtengo los atributos del personaje
-			PaquetePersonaje personaje = new PaquetePersonaje();
-			personaje.setId(idPersonaje);
-			personaje.setRaza(result.getString("raza"));
-			personaje.setCasta(result.getString("casta"));
-			personaje.setFuerza(result.getInt("fuerza"));
-			personaje.setInteligencia(result.getInt("inteligencia"));
-			personaje.setDestreza(result.getInt("destreza"));
-			personaje.setEnergiaTope(result.getInt("energiaTope"));
-			personaje.setSaludTope(result.getInt("saludTope"));
-			personaje.setNombre(result.getString("nombre"));
-			personaje.setExperiencia(result.getInt("experiencia"));
-			personaje.setNivel(result.getInt("nivel"));
-
-			while (j <= 9) {
-				if (resultadoItemsID.getInt(i) != -1) {
-					stDatosItem.setInt(1, resultadoItemsID.getInt(i));
-					resultadoDatoItem = stDatosItem.executeQuery();
-					personaje.anadirItem(resultadoDatoItem.getInt("idItem"), resultadoDatoItem.getString("nombre"),
-							resultadoDatoItem.getInt("wereable"), resultadoDatoItem.getInt("bonusSalud"),
-							resultadoDatoItem.getInt("bonusEnergia"), resultadoDatoItem.getInt("bonusFuerza"),
-							resultadoDatoItem.getInt("bonusDestreza"), resultadoDatoItem.getInt("bonusInteligencia"),
-							resultadoDatoItem.getString("foto"), resultadoDatoItem.getString("fotoEquipado"));
-				}
-				i++;
-				j++;
-			}
-
-			// Devuelvo el paquete personaje con sus datos
-			return personaje;
-
-		} catch (SQLException ex) {
-			Servidor.log
-					.append("Fallo al intentar recuperar el personaje " + user.getUsername() + System.lineSeparator());
-			Servidor.log.append(ex.getMessage() + System.lineSeparator());
-		}
-
-		return new PaquetePersonaje();
-	}
-
-	public PaqueteUsuario getUsuario(String usuario) {
-		ResultSet result = null;
-		PreparedStatement st;
-
-		try {
-			st = connect.prepareStatement("SELECT * FROM registro WHERE usuario = ?");
-			st.setString(1, usuario);
-			result = st.executeQuery();
-
-			String password = result.getString("password");
-			int idPersonaje = result.getInt("idPersonaje");
-
-			PaqueteUsuario paqueteUsuario = new PaqueteUsuario();
-			paqueteUsuario.setUsername(usuario);
-			paqueteUsuario.setPassword(password);
-			paqueteUsuario.setIdPj(idPersonaje);
-
-			return paqueteUsuario;
-		} catch (SQLException e) {
-			Servidor.log.append("Fallo al intentar recuperar el usuario " + usuario + System.lineSeparator());
-			Servidor.log.append(e.getMessage() + System.lineSeparator());
-		}
-
-		return new PaqueteUsuario();
 	}
 
 	public void actualizarInventario(PaquetePersonaje paquetePersonaje) {
