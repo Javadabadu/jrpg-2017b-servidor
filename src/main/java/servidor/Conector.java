@@ -28,7 +28,7 @@ import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
 
 public class Conector {
-
+	private static final int CANTITEMS = 9;
 	Connection connect;
 	private Session session;
 
@@ -102,6 +102,9 @@ public class Conector {
 		try {
 			if (!session.isConnected())
 				connect();
+
+			if(session.isDirty())
+				session.clear();
 			// Primero commiteo al personaje
 			tx = session.beginTransaction();
 			session.save(paquetePersonaje);
@@ -314,7 +317,7 @@ public class Conector {
 	             CriteriaQuery<Item> queryItem = builderItem.createQuery(Item.class);
 	             Root<Item> rootItem = queryItem.from(Item.class);
 
-	            while (j <= 9) {
+	            while (j <= CANTITEMS) {
 	                if (consultaMochi.obtenerItem(i) != -1) {
 	                    queryItem.select(rootItem).where(builderItem.equal(rootItem.get("idItem"), consultaMochi.obtenerItem(i)));
 	                     Item item = session.createQuery(queryItem).getSingleResult();
@@ -436,108 +439,206 @@ public class Conector {
 //	return new PaqueteUsuario();
 
 	public void actualizarPersonaje(PaquetePersonaje paquetePersonaje) {
+
+	CriteriaBuilder mochiBuilder;
+	CriteriaQuery<Mochila> mochiQuery;
+	CriteriaBuilder itemBuilder;
+	CriteriaQuery<Item> itemQuery;
+	Root<Mochila> mochiRoot;
+	Root<Item> itemRoot;
+	Transaction tx = null;
+	Mochila mochila = new Mochila();
+	Item item = new Item();
+	int i = 2 , j = 1;
 		try {
-			int i = 2;
-			int j = 1;
-			PreparedStatement stActualizarPersonaje = connect.prepareStatement(
-					"UPDATE personaje SET fuerza=?, destreza=?, inteligencia=?, saludTope=?, energiaTope=?, experiencia=?, nivel=? "
-							+ "  WHERE idPersonaje=?");
-
-			stActualizarPersonaje.setInt(1, paquetePersonaje.getFuerza());
-			stActualizarPersonaje.setInt(2, paquetePersonaje.getDestreza());
-			stActualizarPersonaje.setInt(3, paquetePersonaje.getInteligencia());
-			stActualizarPersonaje.setInt(4, paquetePersonaje.getSaludTope());
-			stActualizarPersonaje.setInt(5, paquetePersonaje.getEnergiaTope());
-			stActualizarPersonaje.setInt(6, paquetePersonaje.getExperiencia());
-			stActualizarPersonaje.setInt(7, paquetePersonaje.getNivel());
-			stActualizarPersonaje.setInt(8, paquetePersonaje.getId());
-			stActualizarPersonaje.executeUpdate();
-
-			PreparedStatement stDameItemsID = connect.prepareStatement("SELECT * FROM mochila WHERE idMochila = ?");
-			stDameItemsID.setInt(1, paquetePersonaje.getId());
-			ResultSet resultadoItemsID = stDameItemsID.executeQuery();
-			PreparedStatement stDatosItem = connect.prepareStatement("SELECT * FROM item WHERE idItem = ?");
-			ResultSet resultadoDatoItem = null;
-			paquetePersonaje.eliminarItems();
-
-			while (j <= 9) {
-				if (resultadoItemsID.getInt(i) != -1) {
-					stDatosItem.setInt(1, resultadoItemsID.getInt(i));
-					resultadoDatoItem = stDatosItem.executeQuery();
-
-					paquetePersonaje.anadirItem(resultadoDatoItem.getInt("idItem"),
-							resultadoDatoItem.getString("nombre"), resultadoDatoItem.getInt("wereable"),
-							resultadoDatoItem.getInt("bonusSalud"), resultadoDatoItem.getInt("bonusEnergia"),
-							resultadoDatoItem.getInt("bonusFuerza"), resultadoDatoItem.getInt("bonusDestreza"),
-							resultadoDatoItem.getInt("bonusInteligencia"), resultadoDatoItem.getString("foto"),
-							resultadoDatoItem.getString("fotoEquipado"));
+			if(!session.isConnected())
+				connect();
+			tx = session.beginTransaction();
+			session.update(paquetePersonaje);
+			tx.commit();
+			
+			mochiBuilder = session.getCriteriaBuilder();
+			mochiQuery = mochiBuilder.createQuery(Mochila.class);
+			mochiRoot = mochiQuery.from(Mochila.class);
+			mochiQuery.select(mochiRoot).where(mochiBuilder.equal(mochiRoot.get("idMochila"), paquetePersonaje.getId() ));
+			mochila = session.createQuery(mochiQuery).getSingleResult();
+			
+			if(mochila != null) {
+				itemBuilder = session.getCriteriaBuilder();
+				itemQuery = itemBuilder.createQuery(Item.class);
+				itemRoot = itemQuery.from(Item.class);
+				
+				while (j <= CANTITEMS) {
+					if (mochila.obtenerItem(i) != -1) {
+						itemQuery.select(itemRoot).where(itemBuilder.equal(itemRoot.get("idItem"), mochila.obtenerItem(i)));
+						item = session.createQuery(itemQuery).getSingleResult();
+						
+						paquetePersonaje.anadirItem(item.getIdItem(),
+								item.getNombre(), item.getWearLocation(),
+								item.getBonusSalud(), item.getBonusEnergia(),
+								item.getBonusFuerza(), item.getBonusDestreza(),
+								item.getBonusInteligencia(), item.getFoto().toString(),
+								item.getFotoEquipado());
+					}
+					i++;
+					j++;
 				}
-				i++;
-				j++;
+				Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."
+						+ System.lineSeparator());
+			}else {
+				Servidor.log.append("No se encontro la mochila del personaje " + paquetePersonaje.getNombre() + System.lineSeparator());
 			}
-			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."
-					+ System.lineSeparator());
-			;
-		} catch (SQLException e) {
+			
+			
+		} catch (HibernateException | IOException e ) {
 			Servidor.log.append("Fallo al intentar actualizar el personaje " + paquetePersonaje.getNombre()
 					+ System.lineSeparator());
+			
+			if(tx != null)
+				tx.rollback();
 		}
 
 	}
 
+//	int i = 2;
+//	int j = 1;
+//	PreparedStatement stActualizarPersonaje = connect.prepareStatement(
+//			"UPDATE personaje SET fuerza=?, destreza=?, inteligencia=?, saludTope=?, energiaTope=?, experiencia=?, nivel=? "
+//					+ "  WHERE idPersonaje=?");
+//
+//	stActualizarPersonaje.setInt(1, paquetePersonaje.getFuerza());
+//	stActualizarPersonaje.setInt(2, paquetePersonaje.getDestreza());
+//	stActualizarPersonaje.setInt(3, paquetePersonaje.getInteligencia());
+//	stActualizarPersonaje.setInt(4, paquetePersonaje.getSaludTope());
+//	stActualizarPersonaje.setInt(5, paquetePersonaje.getEnergiaTope());
+//	stActualizarPersonaje.setInt(6, paquetePersonaje.getExperiencia());
+//	stActualizarPersonaje.setInt(7, paquetePersonaje.getNivel());
+//	stActualizarPersonaje.setInt(8, paquetePersonaje.getId());
+//	stActualizarPersonaje.executeUpdate();
+//
+//	PreparedStatement stDameItemsID = connect.prepareStatement("SELECT * FROM mochila WHERE idMochila = ?");
+//	stDameItemsID.setInt(1, paquetePersonaje.getId());
+//	ResultSet resultadoItemsID = stDameItemsID.executeQuery();
+//	PreparedStatement stDatosItem = connect.prepareStatement("SELECT * FROM item WHERE idItem = ?");
+//	ResultSet resultadoDatoItem = null;
+//	paquetePersonaje.eliminarItems();
+//
+//	while (j <= 9) {
+//		if (resultadoItemsID.getInt(i) != -1) {
+//			stDatosItem.setInt(1, resultadoItemsID.getInt(i));
+//			resultadoDatoItem = stDatosItem.executeQuery();
+//
+//			paquetePersonaje.anadirItem(resultadoDatoItem.getInt("idItem"),
+//					resultadoDatoItem.getString("nombre"), resultadoDatoItem.getInt("wereable"),
+//					resultadoDatoItem.getInt("bonusSalud"), resultadoDatoItem.getInt("bonusEnergia"),
+//					resultadoDatoItem.getInt("bonusFuerza"), resultadoDatoItem.getInt("bonusDestreza"),
+//					resultadoDatoItem.getInt("bonusInteligencia"), resultadoDatoItem.getString("foto"),
+//					resultadoDatoItem.getString("fotoEquipado"));
+//		}
+//		i++;
+//		j++;
+//	}
+//	Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."
+//			+ System.lineSeparator());
+//	;
+//} catch (SQLException e) {
+//	Servidor.log.append("Fallo al intentar actualizar el personaje " + paquetePersonaje.getNombre()
+//			+ System.lineSeparator());
+//}
 	public void actualizarInventario(PaquetePersonaje paquetePersonaje) {
+		Transaction tx = null;
+		Mochila mochila = new Mochila(paquetePersonaje.getId());
 		int i = 0;
-		PreparedStatement stActualizarMochila;
 		try {
-			stActualizarMochila = connect.prepareStatement(
-					"UPDATE mochila SET item1=? ,item2=? ,item3=? ,item4=? ,item5=? ,item6=? ,item7=? ,item8=? ,item9=? "
-							+ ",item10=? ,item11=? ,item12=? ,item13=? ,item14=? ,item15=? ,item16=? ,item17=? ,item18=? ,item19=? ,item20=? WHERE idMochila=?");
 			while (i < paquetePersonaje.getCantItems()) {
-				stActualizarMochila.setInt(i + 1, paquetePersonaje.getItemID(i));
+				mochila.establecerItem(i + 1, paquetePersonaje.getItemID(i));
 				i++;
 			}
-			for (int j = paquetePersonaje.getCantItems(); j < 20; j++) {
-				stActualizarMochila.setInt(j + 1, -1);
-			}
-			stActualizarMochila.setInt(21, paquetePersonaje.getId());
-			stActualizarMochila.executeUpdate();
+			
+			tx = session.beginTransaction();
+			session.update(mochila);
+			tx.commit();
 
-		} catch (SQLException e) {
+		} catch (HibernateException he) {
+			if(tx != null)
+				tx.rollback();
 		}
 	}
+	
+//	int i = 0;
+//	PreparedStatement stActualizarMochila;
+//	try {
+//		stActualizarMochila = connect.prepareStatement(
+//				"UPDATE mochila SET item1=? ,item2=? ,item3=? ,item4=? ,item5=? ,item6=? ,item7=? ,item8=? ,item9=? "
+//						+ ",item10=? ,item11=? ,item12=? ,item13=? ,item14=? ,item15=? ,item16=? ,item17=? ,item18=? ,item19=? ,item20=? WHERE idMochila=?");
+//		while (i < paquetePersonaje.getCantItems()) {
+//			stActualizarMochila.setInt(i + 1, paquetePersonaje.getItemID(i));
+//			i++;
+//		}
+//		for (int j = paquetePersonaje.getCantItems(); j < 20; j++) {
+//			stActualizarMochila.setInt(j + 1, -1);
+//		}
+//		stActualizarMochila.setInt(21, paquetePersonaje.getId());
+//		stActualizarMochila.executeUpdate();
+//
+//	} catch (SQLException e) {
+//	}
 
 	public void actualizarInventario(int idPersonaje) {
 		int i = 0;
 		PaquetePersonaje paquetePersonaje = Servidor.getPersonajesConectados().get(idPersonaje);
-		PreparedStatement stActualizarMochila;
+		Transaction tx = null;
+		Mochila mochila = new Mochila(paquetePersonaje.getId());
 		try {
-			stActualizarMochila = connect.prepareStatement(
-					"UPDATE mochila SET item1=? ,item2=? ,item3=? ,item4=? ,item5=? ,item6=? ,item7=? ,item8=? ,item9=? "
-							+ ",item10=? ,item11=? ,item12=? ,item13=? ,item14=? ,item15=? ,item16=? ,item17=? ,item18=? ,item19=? ,item20=? WHERE idMochila=?");
 			while (i < paquetePersonaje.getCantItems()) {
-				stActualizarMochila.setInt(i + 1, paquetePersonaje.getItemID(i));
+				mochila.establecerItem(i + 1, paquetePersonaje.getItemID(i));
 				i++;
 			}
+			
 			if (paquetePersonaje.getCantItems() < 9) {
 				int itemGanado = new Random().nextInt(29);
 				itemGanado += 1;
-				stActualizarMochila.setInt(paquetePersonaje.getCantItems() + 1, itemGanado);
-				for (int j = paquetePersonaje.getCantItems() + 2; j < 20; j++) {
-					stActualizarMochila.setInt(j, -1);
-				}
-			} else {
-				for (int j = paquetePersonaje.getCantItems() + 1; j < 20; j++) {
-					stActualizarMochila.setInt(j, -1);
-				}
+				mochila.establecerItem(paquetePersonaje.getCantItems() + 1, itemGanado);
 			}
-			stActualizarMochila.setInt(21, paquetePersonaje.getId());
-			stActualizarMochila.executeUpdate();
 
-		} catch (SQLException e) {
-			Servidor.log.append("Falló al intentar actualizar inventario de" + idPersonaje + "\n");
+			tx = session.beginTransaction();
+			session.update(mochila);
+			tx.commit();
+		} catch (HibernateException he) {
+			if(tx != null)
+				tx.rollback();
 		}
 	}
 
+//	int i = 0;
+//	PaquetePersonaje paquetePersonaje = Servidor.getPersonajesConectados().get(idPersonaje);
+//	PreparedStatement stActualizarMochila;
+//	try {
+//		stActualizarMochila = connect.prepareStatement(
+//				"UPDATE mochila SET item1=? ,item2=? ,item3=? ,item4=? ,item5=? ,item6=? ,item7=? ,item8=? ,item9=? "
+//						+ ",item10=? ,item11=? ,item12=? ,item13=? ,item14=? ,item15=? ,item16=? ,item17=? ,item18=? ,item19=? ,item20=? WHERE idMochila=?");
+//		while (i < paquetePersonaje.getCantItems()) {
+//			stActualizarMochila.setInt(i + 1, paquetePersonaje.getItemID(i));
+//			i++;
+//		}
+//		if (paquetePersonaje.getCantItems() < 9) {
+//			int itemGanado = new Random().nextInt(29);
+//			itemGanado += 1;
+//			stActualizarMochila.setInt(paquetePersonaje.getCantItems() + 1, itemGanado);
+//			for (int j = paquetePersonaje.getCantItems() + 2; j < 20; j++) {
+//				stActualizarMochila.setInt(j, -1);
+//			}
+//		} else {
+//			for (int j = paquetePersonaje.getCantItems() + 1; j < 20; j++) {
+//				stActualizarMochila.setInt(j, -1);
+//			}
+//		}
+//		stActualizarMochila.setInt(21, paquetePersonaje.getId());
+//		stActualizarMochila.executeUpdate();
+//
+//	} catch (SQLException e) {
+//		Servidor.log.append("Falló al intentar actualizar inventario de" + idPersonaje + "\n");
+//	}
 	public void actualizarPersonajeSubioNivel(PaquetePersonaje paquetePersonaje) {
 		Transaction tx = null;
 		try {
