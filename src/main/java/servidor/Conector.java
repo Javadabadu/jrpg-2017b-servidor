@@ -12,14 +12,10 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import org.hibernate.Criteria;
+
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Projection;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.query.criteria.internal.expression.function.AggregationFunction.MAX;
 
 import dominio.Inventario;
 import dominio.Item;
@@ -118,10 +114,11 @@ public class Conector {
 			inventario = new Inventario(idPersonajeNuevo);
 			paquetePersonaje.setIdInventario(idPersonajeNuevo);
 			paquetePersonaje.setIdMochila(idPersonajeNuevo);
-			session.update(paqueteUsuario);
 			session.save(paquetePersonaje);
 			session.save(mochila);
 			session.save(inventario);
+			//session.update(paqueteUsuario);
+			
 		
 			tx.commit();
 			
@@ -140,7 +137,10 @@ public class Conector {
 		return retorno;
 	}
 	
-	
+	/**
+	 * Busca el maximo id y para obtener el siguiente.
+	 * @return el nuevo id
+	 */
 	public int generarIDPersonaje() {
 		Integer id = 0;
 		if(!session.isConnected())
@@ -311,7 +311,7 @@ public class Conector {
 			CriteriaBuilder builderUsuario = session.getCriteriaBuilder();
 			CriteriaQuery<PaqueteUsuario> query = builderUsuario.createQuery(PaqueteUsuario.class);
 			Root<PaqueteUsuario> root = query.from(PaqueteUsuario.class);
-			query.select(root).where(builderUsuario.equal(root.get("idPersonaje"), user.getIdPj()));
+			query.select(root).where(builderUsuario.equal(root.get("username"), user.getUsername()));
 			// Obtengo el id
 			// int idPersonaje = result.getInt("idPersonaje");
 			List<PaqueteUsuario> consultaUser = session.createQuery(query).getResultList();
@@ -345,7 +345,7 @@ public class Conector {
 	                    if (item != null) {
 	                        personaje.anadirItem(item.getIdItem(), item.getNombre(), item.getWearLocation(),
 	                                item.getBonusSalud(), item.getBonusEnergia(), item.getBonusFuerza(),
-	                                item.getBonusDestreza(), item.getBonusInteligencia(), item.getFoto().toString(),
+	                                item.getBonusDestreza(), item.getBonusInteligencia(), item.obtenerFoto(),
 	                                item.getFotoEquipado());
 	                    }
 	             
@@ -497,7 +497,7 @@ public class Conector {
 								item.getNombre(), item.getWearLocation(),
 								item.getBonusSalud(), item.getBonusEnergia(),
 								item.getBonusFuerza(), item.getBonusDestreza(),
-								item.getBonusInteligencia(), item.getFoto().toString(),
+								item.getBonusInteligencia(), item.obtenerFoto(),
 								item.getFotoEquipado());
 					}
 					i++;
@@ -510,7 +510,7 @@ public class Conector {
 			}
 			
 			
-		} catch (HibernateException | IOException e ) {
+		} catch (HibernateException he) {
 			Servidor.log.append("Fallo al intentar actualizar el personaje " + paquetePersonaje.getNombre()
 					+ System.lineSeparator());
 			
@@ -615,7 +615,7 @@ public class Conector {
 				i++;
 			}
 			
-			if (paquetePersonaje.getCantItems() < 9) {
+			if (paquetePersonaje.getCantItems() < CANTITEMS) {
 				int itemGanado = new Random().nextInt(29);
 				itemGanado += 1;
 				mochila.establecerItem(paquetePersonaje.getCantItems() + 1, itemGanado);
