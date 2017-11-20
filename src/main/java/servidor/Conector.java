@@ -2,10 +2,6 @@ package servidor;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
@@ -144,20 +140,18 @@ public class Conector {
 		return retorno;
 	}
 	
-	@SuppressWarnings("deprecation")
+	
 	public int generarIDPersonaje() {
-		int id = 0;
-		Criteria criterio = session.createCriteria(PaquetePersonaje.class);
-		Projection proyeccion = Projections.max("id");
-		criterio = criterio.setProjection(proyeccion);		
-		List<PaquetePersonaje> idMax = criterio.list();
-		if(idMax.size() == 0) {
-			id =1;
-		}else {
-			id = idMax.get(0).getId() + 1;
-		}
+		Integer id = 0;
+		if(!session.isConnected())
+			connect();
+	String queryHQL = "SELECT MAX(pp.id) FROM PaquetePersonaje as pp";
+	
+		id = (int)session.createQuery(queryHQL).getSingleResult();
+	 System.out.println(id);
 		return id;
 	}
+	
 	public boolean registrarInventarioMochila(int idInventarioMochila) {
 		boolean retorno = true;
 		Transaction tx = session.beginTransaction();
