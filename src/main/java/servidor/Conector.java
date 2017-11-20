@@ -109,20 +109,20 @@ public class Conector {
 		
 			// Primero commiteo al personaje
 			tx = session.beginTransaction();
-			paquetePersonaje.setId(generarIDPersonaje());
-			session.save(paquetePersonaje);
-			session.flush();
-			session.clear();
 			
-			paqueteUsuario.setIdPj(paquetePersonaje.getId());
-			mochila = new Mochila(paquetePersonaje.getId());
-			inventario = new Inventario(paquetePersonaje.getId());
-			paquetePersonaje.setIdInventario(paquetePersonaje.getId());
-			paquetePersonaje.setIdMochila(paquetePersonaje.getId());
-			session.update(paquetePersonaje);
+			
+			int idPersonajeNuevo= generarIDPersonaje();
+			
+			paqueteUsuario.setIdPj(idPersonajeNuevo);
+			mochila = new Mochila(idPersonajeNuevo);
+			inventario = new Inventario(idPersonajeNuevo);
+			paquetePersonaje.setIdInventario(idPersonajeNuevo);
+			paquetePersonaje.setIdMochila(idPersonajeNuevo);
 			session.update(paqueteUsuario);
+			session.save(paquetePersonaje);
 			session.save(mochila);
 			session.save(inventario);
+		
 			tx.commit();
 			
 		} catch (HibernateException he ) {
@@ -148,8 +148,7 @@ public class Conector {
 	String queryHQL = "SELECT MAX(pp.id) FROM PaquetePersonaje as pp";
 	
 		id = (int)session.createQuery(queryHQL).getSingleResult();
-	 System.out.println(id);
-		return id;
+	 	return ++id;
 	}
 	
 	public boolean registrarInventarioMochila(int idInventarioMochila) {
