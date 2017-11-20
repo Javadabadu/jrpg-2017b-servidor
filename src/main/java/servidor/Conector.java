@@ -278,7 +278,7 @@ public class Conector {
 		int j = 0;
 		if (!session.isConnected())
 			connect();
-		Transaction tx = session.beginTransaction();
+
 		try {
 			// Selecciono el personaje de ese usuario
 			// PreparedStatement st = connect.prepareStatement("SELECT * FROM registro WHERE
@@ -304,9 +304,9 @@ public class Conector {
 					personaje = consultaPer.get(0);
 				
 				CriteriaBuilder builderMochi = session.getCriteriaBuilder();
-				CriteriaQuery<Mochila> queryMochi = builderPer.createQuery(Mochila.class);
+				CriteriaQuery<Mochila> queryMochi = builderMochi.createQuery(Mochila.class);
 				Root<Mochila> rootMochi = queryMochi.from(Mochila.class);
-				queryMochi.select(rootMochi).where(builderPer.equal(rootMochi.get("idMochila"), idPersonaje));
+				queryMochi.select(rootMochi).where(builderMochi.equal(rootMochi.get("idMochila"), idPersonaje));
 				Mochila consultaMochi = session.createQuery(queryMochi).getSingleResult();
 				
 		        // Items
@@ -331,8 +331,19 @@ public class Conector {
 	                j++;
 	            }
 			} else {
-
+				Servidor.log
+				.append("Fallo al intentar recuperar el personaje " + user.getUsername() + System.lineSeparator());
+				
 			}
+
+			} catch (HibernateException ex) {
+				Servidor.log
+						.append("Fallo al intentar recuperar el personaje " + user.getUsername() + System.lineSeparator());
+				Servidor.log.append(ex.getMessage() + System.lineSeparator());
+			}
+
+			return personaje;
+		}
 			// Selecciono los datos del personaje
 			// PreparedStatement stSeleccionarPersonaje = connect
 			// .prepareStatement("SELECT * FROM personaje WHERE idPersonaje = ?");
@@ -376,42 +387,53 @@ public class Conector {
 //			}
 
 			// Devuelvo el paquete personaje con sus datos
-			return personaje;
-
-		} catch (SQLException ex) {
-			Servidor.log
-					.append("Fallo al intentar recuperar el personaje " + user.getUsername() + System.lineSeparator());
-			Servidor.log.append(ex.getMessage() + System.lineSeparator());
-		}
-
-		return new PaquetePersonaje();
-	}
+	
 
 	public PaqueteUsuario getUsuario(String usuario) {
-		ResultSet result = null;
-		PreparedStatement st;
-
+		PaqueteUsuario user = new PaqueteUsuario();
+		CriteriaBuilder registroBuilder ;
+		CriteriaQuery<PaqueteUsuario> userQuery;
+		Root<PaqueteUsuario> userRoot;
+		
 		try {
-			st = connect.prepareStatement("SELECT * FROM registro WHERE usuario = ?");
-			st.setString(1, usuario);
-			result = st.executeQuery();
-
-			String password = result.getString("password");
-			int idPersonaje = result.getInt("idPersonaje");
-
-			PaqueteUsuario paqueteUsuario = new PaqueteUsuario();
-			paqueteUsuario.setUsername(usuario);
-			paqueteUsuario.setPassword(password);
-			paqueteUsuario.setIdPj(idPersonaje);
-
-			return paqueteUsuario;
-		} catch (SQLException e) {
+		if(!session.isConnected())
+			connect();
+		
+		registroBuilder = session.getCriteriaBuilder();
+		userQuery = registroBuilder.createQuery(PaqueteUsuario.class);
+		userRoot = userQuery.from(PaqueteUsuario.class);
+		
+		userQuery.select(userRoot).where(registroBuilder.equal(userRoot.get("username"), usuario));
+		user = session.createQuery(userQuery).getSingleResult();
+		}catch(HibernateException he) {
 			Servidor.log.append("Fallo al intentar recuperar el usuario " + usuario + System.lineSeparator());
-			Servidor.log.append(e.getMessage() + System.lineSeparator());
+			Servidor.log.append(he.getMessage() + System.lineSeparator());
 		}
-
-		return new PaqueteUsuario();
+		return user;
 	}
+//	ResultSet result = null;
+//	PreparedStatement st;
+//
+//	try {
+//		st = connect.prepareStatement("SELECT * FROM registro WHERE usuario = ?");
+//		st.setString(1, usuario);
+//		result = st.executeQuery();
+//
+//		String password = result.getString("password");
+//		int idPersonaje = result.getInt("idPersonaje");
+//
+//		PaqueteUsuario paqueteUsuario = new PaqueteUsuario();
+//		paqueteUsuario.setUsername(usuario);
+//		paqueteUsuario.setPassword(password);
+//		paqueteUsuario.setIdPj(idPersonaje);
+//
+//		return paqueteUsuario;
+//	} catch (SQLException e) {
+//		Servidor.log.append("Fallo al intentar recuperar el usuario " + usuario + System.lineSeparator());
+//		Servidor.log.append(e.getMessage() + System.lineSeparator());
+//	}
+//
+//	return new PaqueteUsuario();
 
 	public void actualizarPersonaje(PaquetePersonaje paquetePersonaje) {
 		try {
@@ -517,28 +539,42 @@ public class Conector {
 	}
 
 	public void actualizarPersonajeSubioNivel(PaquetePersonaje paquetePersonaje) {
+		Transaction tx = null;
 		try {
-			PreparedStatement stActualizarPersonaje = connect.prepareStatement(
-					"UPDATE personaje SET fuerza=?, destreza=?, inteligencia=?, saludTope=?, energiaTope=?, experiencia=?, nivel=? "
-							+ "  WHERE idPersonaje=?");
-
-			stActualizarPersonaje.setInt(1, paquetePersonaje.getFuerza());
-			stActualizarPersonaje.setInt(2, paquetePersonaje.getDestreza());
-			stActualizarPersonaje.setInt(3, paquetePersonaje.getInteligencia());
-			stActualizarPersonaje.setInt(4, paquetePersonaje.getSaludTope());
-			stActualizarPersonaje.setInt(5, paquetePersonaje.getEnergiaTope());
-			stActualizarPersonaje.setInt(6, paquetePersonaje.getExperiencia());
-			stActualizarPersonaje.setInt(7, paquetePersonaje.getNivel());
-			stActualizarPersonaje.setInt(8, paquetePersonaje.getId());
-
-			stActualizarPersonaje.executeUpdate();
-
+				if(!session.isConnected())
+					connect();
+				
+				tx = session.beginTransaction();
+				session.update(paquetePersonaje);
+				tx.commit();
 			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."
 					+ System.lineSeparator());
 			;
-		} catch (SQLException e) {
+		} catch (HibernateException e) {
 			Servidor.log.append("Fallo al intentar actualizar el personaje " + paquetePersonaje.getNombre()
 					+ System.lineSeparator());
+		}finally {
+			if(tx != null)
+				tx.rollback();
 		}
 	}
 }
+
+//PreparedStatement stActualizarPersonaje = connect.prepareStatement(
+//		"UPDATE personaje SET fuerza=?, destreza=?, inteligencia=?, saludTope=?, energiaTope=?, experiencia=?, nivel=? "
+//				+ "  WHERE idPersonaje=?");
+//
+//stActualizarPersonaje.setInt(1, paquetePersonaje.getFuerza());
+//stActualizarPersonaje.setInt(2, paquetePersonaje.getDestreza());
+//stActualizarPersonaje.setInt(3, paquetePersonaje.getInteligencia());
+//stActualizarPersonaje.setInt(4, paquetePersonaje.getSaludTope());
+//stActualizarPersonaje.setInt(5, paquetePersonaje.getEnergiaTope());
+//stActualizarPersonaje.setInt(6, paquetePersonaje.getExperiencia());
+//stActualizarPersonaje.setInt(7, paquetePersonaje.getNivel());
+//stActualizarPersonaje.setInt(8, paquetePersonaje.getId());
+//
+//stActualizarPersonaje.executeUpdate();
+//
+//Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."
+//		+ System.lineSeparator());
+//;
