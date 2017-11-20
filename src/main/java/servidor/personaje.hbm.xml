@@ -14,7 +14,8 @@
 		<property column="saludTope" name="saludTope" type="int" />
 		<property column="energiaTope" name="energiaTope" type="int" />
 		<property column="nombre" name="nombre" type="string" />
-		<property column="experiencia" name="experiencia" type="string" />
+		<property column="experiencia" name="experiencia" type="int" />
 		<property column="nivel" name="nivel" type="int" />
+		<property column="idAlianza" name="idAlianza" type="int" />
 	</class>
 </hibernate-mapping>

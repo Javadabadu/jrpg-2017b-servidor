@@ -20,6 +20,10 @@ import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.Projection;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.criteria.internal.expression.function.AggregationFunction.MAX;
 
 import dominio.Inventario;
 import dominio.Item;
@@ -88,6 +92,8 @@ public class Conector {
 			retorno = false;
 			if (tx != null)
 				tx.rollback();
+		}finally {
+			session.clear();
 		}
 
 		return retorno;
@@ -95,20 +101,23 @@ public class Conector {
 
 	public boolean registrarPersonaje(PaquetePersonaje paquetePersonaje, PaqueteUsuario paqueteUsuario) {
 		boolean retorno = true;
-		Transaction tx = null;
+		Transaction tx =null ;
 		Mochila mochila;
 		Inventario inventario;
-
+	
+	
 		try {
 			if (!session.isConnected())
 				connect();
 
-			if(session.isDirty())
-				session.clear();
+		
 			// Primero commiteo al personaje
 			tx = session.beginTransaction();
+			paquetePersonaje.setId(generarIDPersonaje());
 			session.save(paquetePersonaje);
-
+			session.flush();
+			session.clear();
+			
 			paqueteUsuario.setIdPj(paquetePersonaje.getId());
 			mochila = new Mochila(paquetePersonaje.getId());
 			inventario = new Inventario(paquetePersonaje.getId());
@@ -119,18 +128,36 @@ public class Conector {
 			session.save(mochila);
 			session.save(inventario);
 			tx.commit();
-		} catch (HibernateException he) {
+			
+		} catch (HibernateException he ) {
 			Servidor.log.append(
 					"Error al intentar crear el personaje " + paquetePersonaje.getNombre() + System.lineSeparator());
 			he.getStackTrace();
 			retorno = false;
 			if (tx != null)
 				tx.rollback();
+		
+		}finally {
+			session.clear();
 		}
 
 		return retorno;
 	}
-
+	
+	@SuppressWarnings("deprecation")
+	public int generarIDPersonaje() {
+		int id = 0;
+		Criteria criterio = session.createCriteria(PaquetePersonaje.class);
+		Projection proyeccion = Projections.max("id");
+		criterio = criterio.setProjection(proyeccion);		
+		List<PaquetePersonaje> idMax = criterio.list();
+		if(idMax.size() == 0) {
+			id =1;
+		}else {
+			id = idMax.get(0).getId() + 1;
+		}
+		return id;
+	}
 	public boolean registrarInventarioMochila(int idInventarioMochila) {
 		boolean retorno = true;
 		Transaction tx = session.beginTransaction();
