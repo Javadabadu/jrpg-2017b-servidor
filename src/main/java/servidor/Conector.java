@@ -616,7 +616,7 @@ public class Conector {
 			}
 			
 			if (paquetePersonaje.getCantItems() < CANTITEMS) {
-				int itemGanado = new Random().nextInt(29);
+				int itemGanado = new Random().nextInt(CANTITEMS);
 				itemGanado += 1;
 				mochila.establecerItem(paquetePersonaje.getCantItems() + 1, itemGanado);
 			}
