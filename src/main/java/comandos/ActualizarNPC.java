@@ -13,12 +13,12 @@ public class ActualizarNPC extends ComandosServer {
 
 	@Override
 	public void ejecutar() {
-		escuchaCliente.setPaqueteNPC((PaqueteNpc)getGson().fromJson(getCadenaLeida(), PaqueteNpc.class));
+		getEscuchaCliente().setPaqueteNPC((PaqueteNpc)getGson().fromJson(getCadenaLeida(), PaqueteNpc.class));
 		
 		//Actualizo la salud del NPC
-		if (Servidor.getPersonajesNPC().get( escuchaCliente.getPaqueteNPC().getId()) != null) {
-			int salud = escuchaCliente.getPaqueteNPC().getNpc().getSalud();		
-			Servidor.getPersonajesNPC().get( escuchaCliente.getPaqueteNPC().getId()).getNpc().setSalud(salud);
+		if (Servidor.getPersonajesNPC().get( getEscuchaCliente().getPaqueteNPC().getId()) != null) {
+			int salud = getEscuchaCliente().getPaqueteNPC().getNpc().getSalud();		
+			Servidor.getPersonajesNPC().get( getEscuchaCliente().getPaqueteNPC().getId()).getNpc().setSalud(salud);
 		}		
 				
 		//Envio de NPC al cliente
@@ -32,7 +32,7 @@ public class ActualizarNPC extends ComandosServer {
 					}
 
 				} catch (IOException e) {
-					Servidor.log.append("Falló al intentar enviar ataque a:" + conectado.getPaquetePersonaje().getId() + "\n");
+					Servidor.getLog().append("Falló al intentar enviar ataque a:" + conectado.getPaquetePersonaje().getId() + "\n");
 				}
 			}
 		}

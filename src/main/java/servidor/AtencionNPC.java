@@ -43,7 +43,7 @@ public class AtencionNPC {
 		Servidor.getPersonajesNPC().put(9, leo4);
 		
 		
-		Servidor.log.append("Se crearon los NPC. " + System.lineSeparator());
+		Servidor.getLog().append("Se crearon los NPC. " + System.lineSeparator());
 		
 	}
 	
