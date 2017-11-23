@@ -17,3 +17,10 @@
 		<mapping resource="servidor/mochila.hbm.xml"/>
 	</session-factory>
 </hibernate-configuration>
+
+
+
+
+
+
+
