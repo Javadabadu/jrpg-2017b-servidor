@@ -115,7 +115,7 @@ public class Conector {
 			session.save(paquetePersonaje);
 			session.save(mochila);
 			session.save(inventario);
-			//session.update(paqueteUsuario);
+			session.update(paqueteUsuario);
 			
 		
 			tx.commit();
@@ -471,9 +471,15 @@ public class Conector {
 		try {
 			if(!session.isConnected())
 				connect();
+			//Actualizo el personaje
 			tx = session.beginTransaction();
+			session.clear();
 			session.update(paquetePersonaje);
+			tx.commit();
 			
+			//Elimino Item de Personaje
+			paquetePersonaje.eliminarItems();
+			//Hago query de mochila
 			mochiBuilder = session.getCriteriaBuilder();
 			mochiQuery = mochiBuilder.createQuery(Mochila.class);
 			mochiRoot = mochiQuery.from(Mochila.class);
@@ -510,7 +516,7 @@ public class Conector {
 		} catch (HibernateException he) {
 			Servidor.getLog().append("Fallo al intentar actualizar el personaje " + paquetePersonaje.getNombre()
 					+ System.lineSeparator());
-			
+			he.printStackTrace();
 			if(tx != null)
 				tx.rollback();
 		}
