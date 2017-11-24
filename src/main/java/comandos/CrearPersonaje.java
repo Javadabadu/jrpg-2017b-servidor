@@ -2,6 +2,8 @@ package comandos;
 
 import java.io.IOException;
 
+import mensajeria.Comando;
+import mensajeria.PaqueteDeNPC;
 import mensajeria.PaquetePersonaje;
 import servidor.Servidor;
 /**
@@ -27,6 +29,12 @@ public class CrearPersonaje extends ComandosServer {
 			getEscuchaCliente().getSalida().writeObject(getGson().toJson
 					(getEscuchaCliente().getPaquetePersonaje(),
 							getEscuchaCliente().getPaquetePersonaje().getClass()));
+			
+			//Manejo de NPC
+			PaqueteDeNPC paqueteNPC = (PaqueteDeNPC) new PaqueteDeNPC(Servidor.getPersonajesNPC()).clone();
+			paqueteNPC.setComando(Comando.ACTUALIZARNPC);				
+			getEscuchaCliente().getSalida().writeObject(getGson().toJson(paqueteNPC));
+
 		} catch (IOException e1) {
 			Servidor.getLog().append("Falló al intentar enviar personaje creado \n");
 		}

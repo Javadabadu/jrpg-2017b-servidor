@@ -33,7 +33,7 @@ public class InicioSesion extends ComandosServer {
 				getEscuchaCliente().setIdPersonaje(paquetePersonaje.getId());
 
 				getEscuchaCliente().getSalida().writeObject(getGson().toJson(paquetePersonaje));
-				
+//				
 				//Manejo de NPC
 				PaqueteDeNPC paqueteNPC = (PaqueteDeNPC) new PaqueteDeNPC(Servidor.getPersonajesNPC()).clone();
 				paqueteNPC.setComando(Comando.ACTUALIZARNPC);				

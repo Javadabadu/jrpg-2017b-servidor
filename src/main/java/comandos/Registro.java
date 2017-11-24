@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import mensajeria.Comando;
 import mensajeria.Paquete;
+import mensajeria.PaqueteDeNPC;
 import mensajeria.PaqueteUsuario;
 import servidor.Servidor;
 /**
@@ -25,6 +26,10 @@ public class Registro extends ComandosServer {
 			if (Servidor.getConector().registrarUsuario(getEscuchaCliente().getPaqueteUsuario())) {
 				paqueteSv.setMensaje(Paquete.getMsjExito());
 				getEscuchaCliente().getSalida().writeObject(getGson().toJson(paqueteSv));
+				//Manejo de NPC
+//				PaqueteDeNPC paqueteNPC = (PaqueteDeNPC) new PaqueteDeNPC(Servidor.getPersonajesNPC()).clone();
+//				paqueteNPC.setComando(Comando.ACTUALIZARNPC);				
+//				getEscuchaCliente().getSalida().writeObject(getGson().toJson(paqueteNPC));
 
 				// Si el usuario no se pudo registrar le envio un msj de fracaso
 			} else {
